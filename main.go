@@ -7,7 +7,7 @@ import (
 func main() {
     r := gin.Default()
 
-    r.StaticFile("/", "./html/index.html")
+    r.StaticFile("/", "./web/static/index.html")
 
     r.GET("/ping", func(c *gin.Context) {
         c.JSON(200, gin.H{
