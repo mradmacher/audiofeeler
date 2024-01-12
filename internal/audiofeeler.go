@@ -1,15 +1,18 @@
 package audiofeeler
 
 type Artist struct {
-    Name string
+	Name string
 }
 
 type Event struct {
-    Date string
-    Url string
-    Locations []string
+	Date    string
+	Hour    string
+	Url     string
+	Venue   string
+	Address string
+	Town    string
 }
 
 type Video struct {
-    Url string
+	Url string
 }
