@@ -1,11 +1,10 @@
-package audiofeeler
+package optiomist
 
 import "testing"
 
 func TestSomeString(t *testing.T) {
-    var opt Option[string]
     value := "I'm here"
-    opt = Some(value)
+    opt := Some(value)
     if !opt.IsSome() {
         t.Errorf("Some.IsSome() = false; expected true")
     }
@@ -24,8 +23,7 @@ func TestSomeString(t *testing.T) {
 }
 
 func TestNoneString(t *testing.T) {
-    var opt Option[string]
-    opt = None[string]()
+    opt := None[string]()
     if opt.IsSome() {
         t.Errorf("Some.IsSome() = true; expected false")
     }
@@ -38,16 +36,15 @@ func TestNoneString(t *testing.T) {
         t.Errorf("Some.IsNil() = true; expected false")
     }
 
-    if opt.Value() != "" {
-        t.Errorf("Some.Value() = %q; expected %q", opt.Value(), "")
+    if opt.Value() != nil {
+        t.Errorf("Some.Value() = %v; expected %v", opt.Value(), nil)
     }
 }
 
 func TestNilString(t *testing.T) {
-    var opt Option[string]
-    opt = Nil[string]()
-    if opt.IsSome() {
-        t.Errorf("Some.IsSome() = true; expected false")
+    opt := Nil[string]()
+    if !opt.IsSome() {
+        t.Errorf("Some.IsSome() = false; expected true")
     }
 
     if opt.IsNone() {
@@ -58,7 +55,7 @@ func TestNilString(t *testing.T) {
         t.Errorf("Some.IsNil() = false; expected true")
     }
 
-    if opt.Value() != "" {
+    if opt.Value() != nil {
         t.Errorf("Some.Value() = %q; expected %q", opt.Value(), "")
     }
 }
