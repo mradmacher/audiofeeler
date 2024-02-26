@@ -1,10 +1,8 @@
 package main
 
 import (
-    "context"
     "fmt"
     "os"
-    "github.com/jackc/pgx/v5"
     "time"
     "github.com/mradmacher/audiofeeler/internal/repo"
     "github.com/mradmacher/audiofeeler/optiomist"
@@ -20,42 +18,27 @@ type Event struct {
 }
 
 func main() {
-    db, err := pgx.Connect(
-        context.Background(),
-        os.Getenv("AUDIOFEELER_DATABASE_URL"),
-    )
+    db, err := repo.Connect(os.Getenv("AUDIOFEELER_DATABASE_URL"))
     if err != nil {
         panic(err)
     }
-    defer db.Close(context.Background())
+    defer db.Close()
 
     r := repo.EventsRepo { db }
 
-    if r.Ping() {
+    if db.Ping() {
         fmt.Println("Connected")
     } else {
         fmt.Println("Not connected")
     }
 
-    _, err = db.Exec(context.Background(),
-        `
-        CREATE TABLE IF NOT EXISTS events (
-            id SERIAL PRIMARY KEY,
-            date date,
-            hour time,
-            venue VARCHAR(255),
-            address VARCHAR(255),
-            town VARCHAR(255)
-        );
-        `,
-    )
-
+	err = db.CreateStructure()
     if err != nil {
         panic(err)
     }
 
     defer func() {
-        _, err = db.Exec(context.Background(), "DROP TABLE IF EXISTS events;")
+        db.RemoveStructure()
         fmt.Println("Tables dropped")
     }()
 

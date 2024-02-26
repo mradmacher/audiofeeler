@@ -5,7 +5,7 @@ import (
     "strings"
     "time"
     "fmt"
-    "github.com/jackc/pgx/v5"
+    "github.com/jackc/pgx/v5/pgxpool"
     "github.com/jackc/pgx/v5/pgtype"
     "github.com/mradmacher/audiofeeler/optiomist"
 )
@@ -28,11 +28,67 @@ type DbEvent struct {
     Town pgtype.Text
 }
 
+type DbClient struct {
+    Conn *pgxpool.Pool
+}
+
+func Connect(dbUrl string) (*DbClient, error) {
+    conn, err := pgxpool.New(context.Background(), dbUrl)
+    if err != nil {
+        return nil, err
+    }
+	return &DbClient{ conn }, nil
+}
+
+func (db *DbClient) Close() {
+    db.Conn.Close()
+}
+
+func (db *DbClient) Ping() (bool) {
+    err := db.Conn.Ping(context.Background())
+    if err != nil {
+        return false
+    } else {
+        return true
+    }
+}
+
 type EventsRepo struct {
-    Db *pgx.Conn
+    Db *DbClient
 }
 
 type Fields map[string]optiomist.Optionable
+
+func (db *DbClient) CreateStructure() error {
+    _, err := db.Conn.Exec(
+		context.Background(),
+        `
+        CREATE TABLE IF NOT EXISTS events (
+            id SERIAL PRIMARY KEY,
+            date date,
+            hour time,
+            venue VARCHAR(255),
+            address VARCHAR(255),
+            town VARCHAR(255)
+        );
+        `,
+    )
+
+    if err != nil {
+        return err
+    }
+	return nil
+}
+
+func (db *DbClient) RemoveStructure() error {
+	_, err := db.Conn.Exec(
+		context.Background(),
+		`
+		DROP TABLE IF EXISTS events;
+		`,
+	)
+	return err
+}
 
 func buildInsert(tableName string, fields Fields) (string, []any) {
     //names := make([]string, 5)
@@ -54,9 +110,15 @@ func buildInsert(tableName string, fields Fields) (string, []any) {
             }
         }
     }
-    query := "INSERT INTO " + tableName + "(" +
+    query := "INSERT INTO " + tableName
+	if len(names) > 0 {
+		query = query + " (" +
         strings.Join(names, ", ") + ") VALUES (" +
-        strings.Join(params, ", ") + ") RETURNING id"
+        strings.Join(params, ", ") + ")"
+	} else {
+		query = query + " DEFAULT VALUES"
+	}
+	query = query + " RETURNING id"
     return query, values
 }
 
@@ -71,7 +133,7 @@ func (repo *EventsRepo) Create(params EventParams) (uint, error) {
             "town": params.Town,
         },
     )
-    row := repo.Db.QueryRow(context.Background(),
+    row := repo.Db.Conn.QueryRow(context.Background(),
         query,
         values...,
     )
@@ -83,7 +145,7 @@ func (repo *EventsRepo) Create(params EventParams) (uint, error) {
 func (repo *EventsRepo) All() (*[]EventParams, error) {
     var events []EventParams
 
-    rows, err := repo.Db.Query(context.Background(),
+    rows, err := repo.Db.Conn.Query(context.Background(),
         `
         SELECT id, date, hour, venue, address, town FROM events;
         `,
@@ -127,12 +189,3 @@ func (repo *EventsRepo) All() (*[]EventParams, error) {
     return &events, nil
 }
 
-func (repo *EventsRepo) Ping() (bool) {
-
-    err := repo.Db.Ping(context.Background())
-    if err != nil {
-        return false
-    } else {
-        return true
-    }
-}
