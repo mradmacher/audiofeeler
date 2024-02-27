@@ -57,12 +57,12 @@ func TestSome_string(t *testing.T) {
 		t.Error("Some.IsNil() = true; expected false")
 	}
 
-	if opt.Value() != value {
-		t.Errorf("Some.Value() = %q; expected %q", opt.Value(), value)
+	if opt.AnyValue() != value {
+		t.Errorf("Some.AnyValue() = %q; expected %q", opt.AnyValue(), value)
 	}
 
-	if opt.TypedValue() != value {
-		t.Errorf("Some.TypedValue() = %q; expected %q", opt.TypedValue(), value)
+	if opt.Value() != value {
+		t.Errorf("Some.Value() = %q; expected %q", opt.Value(), value)
 	}
 }
 

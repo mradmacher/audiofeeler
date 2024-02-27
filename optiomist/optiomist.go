@@ -20,7 +20,7 @@ type Optionable interface {
 	IsSome() bool
 	IsNone() bool
 	IsNil() bool
-	Value() any
+	AnyValue() any
 }
 
 // It converts provided value of type T to an Option[T].
@@ -65,11 +65,11 @@ func (opt Option[T]) IsNil() bool {
 }
 
 // Returns the value of an option without specified type.
-func (opt Option[T]) Value() any {
+func (opt Option[T]) AnyValue() any {
 	return opt.value
 }
 
 // Returns the value of an option with the option's type.
-func (opt Option[T]) TypedValue() T {
+func (opt Option[T]) Value() T {
 	return opt.value
 }

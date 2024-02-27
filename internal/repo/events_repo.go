@@ -10,6 +10,7 @@ import (
     "github.com/mradmacher/audiofeeler/optiomist"
 )
 
+
 type EventParams struct {
     ID      optiomist.Option[uint32]
     Date    optiomist.Option[time.Time]
@@ -106,7 +107,7 @@ func buildInsert(tableName string, fields Fields) (string, []any) {
             } else {
                 params = append(params, fmt.Sprintf("$%d", n))
                 n++
-                values = append(values, value.Value())
+                values = append(values, value.AnyValue())
             }
         }
     }
@@ -122,7 +123,7 @@ func buildInsert(tableName string, fields Fields) (string, []any) {
     return query, values
 }
 
-func (repo *EventsRepo) Create(params EventParams) (uint, error) {
+func (repo *EventsRepo) Create(params EventParams) (uint32, error) {
     query, values := buildInsert(
         "events",
         Fields{
@@ -137,9 +138,53 @@ func (repo *EventsRepo) Create(params EventParams) (uint, error) {
         query,
         values...,
     )
-    var id uint
+    var id uint32
     err := row.Scan(&id)
     return id, err
+}
+
+func buildEventParams(event DbEvent) *EventParams {
+	eventParams := EventParams {
+		ID: optiomist.Optiomize(event.ID.Uint32, event.ID.Valid),
+		Date: optiomist.Optiomize(event.Date.Time, event.Date.Valid),
+		Venue: optiomist.Optiomize(event.Venue.String, event.Venue.Valid),
+		Address: optiomist.Optiomize(event.Address.String, event.Address.Valid),
+		Town: optiomist.Optiomize(event.Town.String, event.Town.Valid),
+	}
+	opt := optiomist.Optiomize(event.Hour.Microseconds, event.Hour.Valid)
+	if opt.IsSome() {
+		eventParams.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
+	} else {
+		eventParams.Hour = optiomist.None[time.Time]()
+	}
+	return &eventParams
+}
+
+func (repo *EventsRepo) Find(id uint32) (*EventParams, error) {
+    row := repo.Db.Conn.QueryRow(context.Background(),
+        `
+        SELECT id, date, hour, venue, address, town
+		FROM events
+		WHERE id = $1
+        `,
+		id,
+    )
+
+	var event DbEvent
+	err := row.Scan(
+		&event.ID,
+		&event.Date,
+		&event.Hour,
+		&event.Venue,
+		&event.Address,
+		&event.Town,
+	)
+
+    if err != nil {
+        return nil, err
+    }
+
+	return buildEventParams(event), nil
 }
 
 func (repo *EventsRepo) All() (*[]EventParams, error) {
@@ -165,21 +210,7 @@ func (repo *EventsRepo) All() (*[]EventParams, error) {
             &event.Town,
         )
 
-        eventParams := EventParams {
-            ID: optiomist.Optiomize(event.ID.Uint32, event.ID.Valid),
-            Date: optiomist.Optiomize(event.Date.Time, event.Date.Valid),
-            Venue: optiomist.Optiomize(event.Venue.String, event.Venue.Valid),
-            Address: optiomist.Optiomize(event.Address.String, event.Address.Valid),
-            Town: optiomist.Optiomize(event.Town.String, event.Town.Valid),
-        }
-        opt := optiomist.Optiomize(event.Hour.Microseconds, event.Hour.Valid)
-        if opt.IsSome() {
-            eventParams.Hour = optiomist.Some(time.UnixMicro(opt.TypedValue()))
-        } else {
-            eventParams.Hour = optiomist.None[time.Time]()
-        }
-
-        events = append(events, eventParams)
+        events = append(events, *buildEventParams(event))
     }
 
     if rows.Err() != nil {
