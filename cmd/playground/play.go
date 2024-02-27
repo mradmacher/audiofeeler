@@ -8,15 +8,6 @@ import (
     "github.com/mradmacher/audiofeeler/optiomist"
 )
 
-type Event struct {
-    ID      uint32
-    Date    string
-    Hour    string
-    Venue   string
-    Address string
-    Town    string
-}
-
 func main() {
     db, err := repo.Connect(os.Getenv("AUDIOFEELER_DATABASE_URL"))
     if err != nil {
@@ -74,5 +65,4 @@ func main() {
     for _, event := range *events {
         fmt.Printf("Event: %v\n", event)
     }
-
 }

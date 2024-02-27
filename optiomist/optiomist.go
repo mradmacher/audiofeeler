@@ -5,8 +5,10 @@ type OptionStatus int
 
 // Option has nil value.
 const OptionNil = -1
+
 // Option is undefined.
 const OptionNone = 0
+
 // Option has some value.
 const OptionSome = 1
 
