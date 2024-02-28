@@ -26,8 +26,8 @@ type Optionable interface {
 }
 
 // It converts provided value of type T to an Option[T].
-// If the second parameter is true, it returns a Some Option.
-// Otherwise it returns None Option.
+// If the second parameter is true, it returns a "some" Option.
+// Otherwise it returns "none" Option.
 func Optiomize[T any](value T, some bool) Option[T] {
 	if some {
 		return Some[T](value)
@@ -36,6 +36,20 @@ func Optiomize[T any](value T, some bool) Option[T] {
 	}
 }
 
+// It compares two options of same comparable type.
+// For "some" variant, two options are equal if their values are equal.
+// Otherwise thery are equal if both are "none" or both are "nil".
+func IsEql[T comparable](opt1, opt2 Option[T]) bool {
+	if opt1.status == opt2.status {
+		if opt1.status == OptionSome  {
+			return opt1.value == opt2.value
+		} else {
+			return true
+		}
+	}
+
+	return false
+}
 // Creates an option with a value of type T.
 func Some[T any](value T) Option[T] {
 	return Option[T]{value, OptionSome}
@@ -51,7 +65,7 @@ func Nil[T any]() Option[T] {
 	return Option[T]{status: OptionNil}
 }
 
-// Does the option have some value?
+// Does the option have defined value?
 func (opt Option[T]) IsSome() bool {
 	return opt.status == OptionSome || opt.status == OptionNil
 }

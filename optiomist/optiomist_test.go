@@ -100,3 +100,52 @@ func TestNil_string(t *testing.T) {
 		t.Errorf("Some.Value() = %q; expected nil", opt.Value())
 	}
 }
+
+func TestIsEql_string(t *testing.T) {
+	tests := []struct {
+		arg1 Option[string]
+		arg2 Option[string]
+		want bool
+	} {
+		{
+			arg1: Some("Hello world!"),
+			arg2: Some("Hello world!"),
+			want: true,
+		}, {
+			arg1: Some("Hello world!"),
+			arg2: Some("Goodby world!"),
+			want: false,
+		}, {
+			arg1: Some("Hello world!"),
+			arg2: Nil[string](),
+			want: false,
+		}, {
+			arg1: Some("Hello world!"),
+			arg2: None[string](),
+			want: false,
+		}, {
+			arg1: None[string](),
+			arg2: Nil[string](),
+			want: false,
+		}, {
+			arg1: None[string](),
+			arg2: None[string](),
+			want: true,
+		}, {
+			arg1: Nil[string](),
+			arg2: Nil[string](),
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		got := IsEql(test.arg1, test.arg2)
+		if got != test.want {
+			t.Errorf("IsEql(%v, %v) = %v; expected %v", test.arg1, test.arg2, got, test.want)
+		}
+		got = IsEql(test.arg2, test.arg1)
+		if got != test.want {
+			t.Errorf("IsEql(%v, %v) = %v; expected %v", test.arg2, test.arg1, got, test.want)
+		}
+	}
+}
