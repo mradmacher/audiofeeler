@@ -106,7 +106,7 @@ func TestIsEql_string(t *testing.T) {
 		arg1 Option[string]
 		arg2 Option[string]
 		want bool
-	} {
+	}{
 		{
 			arg1: Some("Hello world!"),
 			arg2: Some("Hello world!"),

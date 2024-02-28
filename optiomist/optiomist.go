@@ -41,7 +41,7 @@ func Optiomize[T any](value T, some bool) Option[T] {
 // Otherwise thery are equal if both are "none" or both are "nil".
 func IsEql[T comparable](opt1, opt2 Option[T]) bool {
 	if opt1.status == opt2.status {
-		if opt1.status == OptionSome  {
+		if opt1.status == OptionSome {
 			return opt1.value == opt2.value
 		} else {
 			return true
@@ -50,6 +50,7 @@ func IsEql[T comparable](opt1, opt2 Option[T]) bool {
 
 	return false
 }
+
 // Creates an option with a value of type T.
 func Some[T any](value T) Option[T] {
 	return Option[T]{value, OptionSome}

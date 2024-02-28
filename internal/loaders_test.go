@@ -1,22 +1,23 @@
 package audiofeeler
 
 import (
+	"github.com/mradmacher/audiofeeler/optiomist"
 	"strings"
 	"testing"
+	"time"
 )
 
 var exampleEvents string = `
-    - date: 24.11.2023
+    - date: 2023-11-24
       hour: 20:00
       venue: Klub XYZ
       address: Mostowa 2
       town: Kraków
-      url: https://www.example.com/events/xyz
-    - date: 10.08.2023
+    - date: 2023-08-10
       hour: 19:30
       venue: Księgarnia podróżnicza ABC
       town: Kraków
-    - date: 01.01.2024
+    - date: 2024-01-01
       venue: Podgórska Jesień
 `
 
@@ -34,28 +35,31 @@ func TestLoadEvents_fetchesAllEvents(t *testing.T) {
 
 	wants := []Event{
 		Event{
-			Date:    "24.11.2023",
-			Hour:    "20:00",
-			Venue:   "Klub XYZ",
-			Address: "Mostowa 2",
-			Town:    "Kraków",
-			Url:     "https://www.example.com/events/xyz",
+			Date:    optiomist.Some(time.Date(2023, 11, 24, 0, 0, 0, 0, time.UTC)),
+			Hour:    optiomist.Some(time.Date(0, 1, 1, 20, 0, 0, 0, time.UTC)),
+			Venue:   optiomist.Some("Klub XYZ"),
+			Address: optiomist.Some("Mostowa 2"),
+			Town:    optiomist.Some("Kraków"),
 		},
 		Event{
-			Date:  "10.08.2023",
-			Hour:  "19:30",
-			Venue: "Księgarnia podróżnicza ABC",
-			Town:  "Kraków",
+			Date:    optiomist.Some(time.Date(2023, 8, 10, 0, 0, 0, 0, time.UTC)),
+			Hour:    optiomist.Some(time.Date(0, 1, 1, 19, 30, 0, 0, time.UTC)),
+			Venue:   optiomist.Some("Księgarnia podróżnicza ABC"),
+			Address: optiomist.None[string](),
+			Town:    optiomist.Some("Kraków"),
 		},
 		Event{
-			Date:  "01.01.2024",
-			Venue: "Podgórska Jesień",
+			Date:    optiomist.Some(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+			Hour:    optiomist.None[time.Time](),
+			Venue:   optiomist.Some("Podgórska Jesień"),
+			Address: optiomist.None[string](),
+			Town:    optiomist.None[string](),
 		},
 	}
 
 	for i, want := range wants {
 		if got := events[i]; got != want {
-			t.Errorf("events[%d] = %v; want %v", i, got, want)
+			t.Errorf("events[%d] = %+v; want %+v", i, got, want)
 		}
 	}
 }

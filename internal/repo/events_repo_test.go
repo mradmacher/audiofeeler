@@ -1,21 +1,22 @@
 package repo
 
 import (
-	"testing"
+	"github.com/mradmacher/audiofeeler/internal"
+	"github.com/mradmacher/audiofeeler/optiomist"
 	"os"
-    "time"
-    "github.com/mradmacher/audiofeeler/optiomist"
+	"testing"
+	"time"
 )
 
 func setup(t *testing.T) (func(*testing.T), *DbClient) {
 	db, err := Connect(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
-    if err != nil {
+	if err != nil {
 		t.Fatal("Can't connect to DB")
-    }
+	}
 	err = db.CreateStructure()
-    if err != nil {
+	if err != nil {
 		t.Fatal("Can't create tables")
-    }
+	}
 	return func(t *testing.T) {
 		db.RemoveStructure()
 		db.Close()
@@ -26,7 +27,7 @@ func TestEventRepo(t *testing.T) {
 	teardown, db := setup(t)
 	defer teardown(t)
 
-    r := EventsRepo { db }
+	r := EventsRepo{db}
 
 	t.Run("Create", testEventsRepo_Create(&r))
 	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r))
@@ -36,42 +37,42 @@ func TestEventRepo(t *testing.T) {
 func testEventsRepo_Create(r *EventsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
-			name string
-			params EventParams
+			name  string
+			event audiofeeler.Event
 		}{
 			{
 				"some params",
-				EventParams {
-					Date: optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
-					Hour: optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
-					Venue: optiomist.Some("Some venue"),
+				audiofeeler.Event{
+					Date:    optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
+					Hour:    optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
+					Venue:   optiomist.Some("Some venue"),
 					Address: optiomist.Some("Some address"),
-					Town: optiomist.Some("Some town"),
+					Town:    optiomist.Some("Some town"),
 				},
 			}, {
 				"none params",
-				EventParams {
-					Date: optiomist.None[time.Time](),
-					Hour: optiomist.None[time.Time](),
-					Venue: optiomist.None[string](),
+				audiofeeler.Event{
+					Date:    optiomist.None[time.Time](),
+					Hour:    optiomist.None[time.Time](),
+					Venue:   optiomist.None[string](),
 					Address: optiomist.None[string](),
-					Town: optiomist.None[string](),
+					Town:    optiomist.None[string](),
 				},
 			}, {
 				"nil params",
-				EventParams {
-					Date: optiomist.Nil[time.Time](),
-					Hour: optiomist.Nil[time.Time](),
-					Venue: optiomist.Nil[string](),
+				audiofeeler.Event{
+					Date:    optiomist.Nil[time.Time](),
+					Hour:    optiomist.Nil[time.Time](),
+					Venue:   optiomist.Nil[string](),
 					Address: optiomist.Nil[string](),
-					Town: optiomist.Nil[string](),
+					Town:    optiomist.Nil[string](),
 				},
 			},
 		}
 
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
-				id, err := r.Create(test.params)
+				id, err := r.Create(test.event)
 
 				if err != nil {
 					t.Fatal(err)
@@ -86,12 +87,12 @@ func testEventsRepo_Create(r *EventsRepo) func(*testing.T) {
 
 func testEventsRepo_Find_not_nils(r *EventsRepo) func(*testing.T) {
 	return func(t *testing.T) {
-		event := EventParams {
-			Date: optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
-			Hour: optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
-			Venue: optiomist.Some("Some venue"),
+		event := audiofeeler.Event{
+			Date:    optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
+			Hour:    optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
+			Venue:   optiomist.Some("Some venue"),
 			Address: optiomist.Some("Some address"),
-			Town: optiomist.Some("Some town"),
+			Town:    optiomist.Some("Some town"),
 		}
 
 		id, err := r.Create(event)
@@ -125,39 +126,39 @@ func testEventsRepo_Find_not_nils(r *EventsRepo) func(*testing.T) {
 
 func testEventsRepo_Find_nils(r *EventsRepo) func(*testing.T) {
 	return func(t *testing.T) {
-		event := EventParams {
-			Date: optiomist.None[time.Time](),
-			Hour: optiomist.Nil[time.Time](),
-			Venue: optiomist.None[string](),
+		event := audiofeeler.Event{
+			Date:    optiomist.None[time.Time](),
+			Hour:    optiomist.Nil[time.Time](),
+			Venue:   optiomist.None[string](),
 			Address: optiomist.Nil[string](),
-			Town: optiomist.None[string](),
+			Town:    optiomist.None[string](),
 		}
 
 		id, err := r.Create(event)
 		if err != nil {
 			t.Fatal(err)
 		}
-		params, err := r.Find(id)
+		found, err := r.Find(id)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if params.ID.Value() != id {
-			t.Errorf("ID = %v; expected %v", params.ID.Value(), id)
+		if found.ID.Value() != id {
+			t.Errorf("ID = %v; expected %v", found.ID.Value(), id)
 		}
-		if params.Date.IsSome() {
-			t.Errorf("Date = %v; expected none", params.Date.Value())
+		if found.Date.IsSome() {
+			t.Errorf("Date = %v; expected none", found.Date.Value())
 		}
-		if params.Hour.IsSome() {
-			t.Errorf("Hour = %v; expected none", params.Hour.Value())
+		if found.Hour.IsSome() {
+			t.Errorf("Hour = %v; expected none", found.Hour.Value())
 		}
-		if params.Venue.IsSome() {
-			t.Errorf("Venue = %v; expected none", params.Venue.Value())
+		if found.Venue.IsSome() {
+			t.Errorf("Venue = %v; expected none", found.Venue.Value())
 		}
-		if params.Address.IsSome() {
-			t.Errorf("Address = %v; expected none", params.Address.Value())
+		if found.Address.IsSome() {
+			t.Errorf("Address = %v; expected none", found.Address.Value())
 		}
-		if params.Town.IsSome() {
-			t.Errorf("Town = %v; expected none", params.Town.Value())
+		if found.Town.IsSome() {
+			t.Errorf("Town = %v; expected none", found.Town.Value())
 		}
 	}
 }

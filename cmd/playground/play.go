@@ -6,6 +6,7 @@ import (
     "time"
     "github.com/mradmacher/audiofeeler/internal/repo"
     "github.com/mradmacher/audiofeeler/optiomist"
+    "github.com/mradmacher/audiofeeler/internal"
 )
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 
     fmt.Println("Tables created")
 
-    params := repo.EventParams {
+    params := audiofeeler.Event {
         Date: optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
         Hour: optiomist.Nil[time.Time](),
         Venue: optiomist.Some("Some venue"),
@@ -46,7 +47,7 @@ func main() {
     id, err := r.Create(params)
     fmt.Printf("Event created [%v]: %v\n", id, err)
 
-    params = repo.EventParams {
+    params = audiofeeler.Event {
         Date: optiomist.Some(time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)),
         Hour: optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
         Venue: optiomist.Some("Other venue"),
