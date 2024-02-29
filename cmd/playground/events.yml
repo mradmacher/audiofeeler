@@ -1,0 +1,11 @@
+- date: 2023-11-24
+  hour: 20:00
+  venue: Klub XYZ
+  address: Mostowa 2
+  town: Kraków
+- date: 2023-08-10
+  hour: 19:30
+  venue: Księgarnia podróżnicza ABC
+  town: Kraków
+- date: 2024-01-01
+  venue: Podgórska Jesień
