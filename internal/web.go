@@ -1,9 +1,9 @@
 package audiofeeler
 
 import (
-  "github.com/go-chi/chi/v5"
-  "html/template"
-  "net/http"
+	"github.com/go-chi/chi/v5"
+	"html/template"
+	"net/http"
 )
 
 type App struct {
@@ -21,7 +21,7 @@ func NewApp(templatesPath string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-  app.MountHandlers()
+	app.MountHandlers()
 
 	return &app, nil
 }
@@ -36,7 +36,7 @@ func (app *App) Start() {
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := app.template.Execute(w, struct {}{})
+	err := app.template.Execute(w, struct{}{})
 	if err != nil {
 		panic(err)
 	}
