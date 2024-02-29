@@ -21,7 +21,7 @@ var exampleEvents string = `
       venue: Podgórska Jesień
 `
 
-func TestLoadEvents_fetchesAllEvents(t *testing.T) {
+func TestLoadEvents(t *testing.T) {
 	reader := strings.NewReader(exampleEvents)
 	events, err := LoadEvents(reader)
 
