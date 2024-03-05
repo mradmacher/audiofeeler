@@ -3,6 +3,7 @@ package audiofeeler
 import (
 	"html/template"
 	"net/http"
+	"fmt"
 )
 
 type App struct {
@@ -26,11 +27,12 @@ func NewApp(templatesPath string) (*App, error) {
 }
 
 func (app *App) MountHandlers() {
-	app.router.HandleFunc( "GET /", app.homeHandler)
+	fmt.Println("MOUNTING")
+	app.router.HandleFunc("GET /", app.homeHandler)
 }
 
 func (app *App) Start() {
-	http.ListenAndServe(":3000", app.router)
+	http.ListenAndServe(":3000", nil)
 }
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {

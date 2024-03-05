@@ -12,8 +12,6 @@ func TestHome(t *testing.T) {
 		t.Errorf("Error creating the app: %v", err)
 	}
 
-	app.MountHandlers()
-
 	req := httptest.NewRequest("GET", "/", nil)
 	res := httptest.NewRecorder()
 	app.router.ServeHTTP(res, req)
