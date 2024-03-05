@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type dbEvent struct {
+type eventRecord struct {
 	id        pgtype.Uint32
 	accountId pgtype.Uint32
 	date      pgtype.Date
@@ -41,22 +41,22 @@ func (repo *EventsRepo) Create(event audiofeeler.Event) (uint32, error) {
 	return id, err
 }
 
-func buildEventParams(event dbEvent) *audiofeeler.Event {
-	aEvent := audiofeeler.Event{
-		Id:        optiomist.Optiomize(event.id.Uint32, event.id.Valid),
-		AccountId: optiomist.Optiomize(event.accountId.Uint32, event.accountId.Valid),
-		Date:      optiomist.Optiomize(event.date.Time, event.date.Valid),
-		Venue:     optiomist.Optiomize(event.venue.String, event.venue.Valid),
-		Address:   optiomist.Optiomize(event.address.String, event.address.Valid),
-		Town:      optiomist.Optiomize(event.town.String, event.town.Valid),
+func buildEventParams(record eventRecord) *audiofeeler.Event {
+	event := audiofeeler.Event{
+		Id:        optiomist.Optiomize(record.id.Uint32, record.id.Valid),
+		AccountId: optiomist.Optiomize(record.accountId.Uint32, record.accountId.Valid),
+		Date:      optiomist.Optiomize(record.date.Time, record.date.Valid),
+		Venue:     optiomist.Optiomize(record.venue.String, record.venue.Valid),
+		Address:   optiomist.Optiomize(record.address.String, record.address.Valid),
+		Town:      optiomist.Optiomize(record.town.String, record.town.Valid),
 	}
-	opt := optiomist.Optiomize(event.hour.Microseconds, event.hour.Valid)
+	opt := optiomist.Optiomize(record.hour.Microseconds, record.hour.Valid)
 	if opt.IsSome() {
-		aEvent.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
+		event.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
 	} else {
-		aEvent.Hour = optiomist.None[time.Time]()
+		event.Hour = optiomist.None[time.Time]()
 	}
-	return &aEvent
+	return &event
 }
 
 func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
@@ -69,22 +69,22 @@ func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
 		id,
 	)
 
-	var event dbEvent
+	var record eventRecord
 	err := row.Scan(
-		&event.id,
-		&event.accountId,
-		&event.date,
-		&event.hour,
-		&event.venue,
-		&event.address,
-		&event.town,
+		&record.id,
+		&record.accountId,
+		&record.date,
+		&record.hour,
+		&record.venue,
+		&record.address,
+		&record.town,
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return buildEventParams(event), nil
+	return buildEventParams(record), nil
 }
 
 func (repo *EventsRepo) FindAll() (*[]audiofeeler.Event, error) {
@@ -100,23 +100,22 @@ func (repo *EventsRepo) FindAll() (*[]audiofeeler.Event, error) {
 		return nil, err
 	}
 	for rows.Next() {
-		var event dbEvent
+		var record eventRecord
 		err = rows.Scan(
-			&event.id,
-			&event.accountId,
-			&event.date,
-			&event.hour,
-			&event.venue,
-			&event.address,
-			&event.town,
+			&record.id,
+			&record.accountId,
+			&record.date,
+			&record.hour,
+			&record.venue,
+			&record.address,
+			&record.town,
 		)
 
-		events = append(events, *buildEventParams(event))
+		events = append(events, *buildEventParams(record))
 	}
 
 	if rows.Err() != nil {
 		return nil, rows.Err()
 	}
-
 	return &events, nil
 }
