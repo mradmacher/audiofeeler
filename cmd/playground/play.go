@@ -19,7 +19,7 @@ func main() {
 	//}()
 
 	r := repo.EventsRepo{db}
-	events, err := r.All()
+	events, err := r.FindAll()
 	if err != nil {
 		panic(err)
 	}

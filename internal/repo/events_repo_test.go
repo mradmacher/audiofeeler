@@ -3,38 +3,37 @@ package repo
 import (
 	"github.com/mradmacher/audiofeeler/internal"
 	"github.com/mradmacher/audiofeeler/optiomist"
-	"os"
 	"testing"
 	"time"
 )
 
-func setup(t *testing.T) (func(*testing.T), *DbClient) {
-	db, err := Connect(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
+func setupAccount(db *DbClient, t *testing.T) uint32 {
+	accountsRepo := AccountsRepo{db}
+	accountId, err := accountsRepo.Create(audiofeeler.Account{
+		Name: optiomist.Some("example"),
+		Url:  optiomist.Some("http://example.com"),
+	})
 	if err != nil {
-		t.Fatal("Can't connect to DB")
+		t.Fatalf("Failed to create account: %v", err)
 	}
-	err = db.CreateStructure()
-	if err != nil {
-		t.Fatal("Can't create tables")
-	}
-	return func(t *testing.T) {
-		db.RemoveStructure()
-		db.Close()
-	}, db
+
+	return accountId
 }
 
-func TestEventRepo(t *testing.T) {
-	teardown, db := setup(t)
+func TestEventsRepo(t *testing.T) {
+	teardown, db := setupTest(t)
 	defer teardown(t)
+
+	accountId := setupAccount(db, t)
 
 	r := EventsRepo{db}
 
-	t.Run("Create", testEventsRepo_Create(&r))
-	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r))
-	t.Run("Find nil values", testEventsRepo_Find_nils(&r))
+	t.Run("Create", testEventsRepo_Create(&r, accountId))
+	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r, accountId))
+	t.Run("Find nil values", testEventsRepo_Find_nils(&r, accountId))
 }
 
-func testEventsRepo_Create(r *EventsRepo) func(*testing.T) {
+func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
@@ -43,29 +42,32 @@ func testEventsRepo_Create(r *EventsRepo) func(*testing.T) {
 			{
 				"some params",
 				audiofeeler.Event{
-					Date:    optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
-					Hour:    optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
-					Venue:   optiomist.Some("Some venue"),
-					Address: optiomist.Some("Some address"),
-					Town:    optiomist.Some("Some town"),
+					AccountId: optiomist.Some(accountId),
+					Date:      optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
+					Hour:      optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
+					Venue:     optiomist.Some("Some venue"),
+					Address:   optiomist.Some("Some address"),
+					Town:      optiomist.Some("Some town"),
 				},
 			}, {
 				"none params",
 				audiofeeler.Event{
-					Date:    optiomist.None[time.Time](),
-					Hour:    optiomist.None[time.Time](),
-					Venue:   optiomist.None[string](),
-					Address: optiomist.None[string](),
-					Town:    optiomist.None[string](),
+					AccountId: optiomist.Some(accountId),
+					Date:      optiomist.None[time.Time](),
+					Hour:      optiomist.None[time.Time](),
+					Venue:     optiomist.None[string](),
+					Address:   optiomist.None[string](),
+					Town:      optiomist.None[string](),
 				},
 			}, {
 				"nil params",
 				audiofeeler.Event{
-					Date:    optiomist.Nil[time.Time](),
-					Hour:    optiomist.Nil[time.Time](),
-					Venue:   optiomist.Nil[string](),
-					Address: optiomist.Nil[string](),
-					Town:    optiomist.Nil[string](),
+					AccountId: optiomist.Some(accountId),
+					Date:      optiomist.Nil[time.Time](),
+					Hour:      optiomist.Nil[time.Time](),
+					Venue:     optiomist.Nil[string](),
+					Address:   optiomist.Nil[string](),
+					Town:      optiomist.Nil[string](),
 				},
 			},
 		}
@@ -85,14 +87,15 @@ func testEventsRepo_Create(r *EventsRepo) func(*testing.T) {
 	}
 }
 
-func testEventsRepo_Find_not_nils(r *EventsRepo) func(*testing.T) {
+func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
 		event := audiofeeler.Event{
-			Date:    optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
-			Hour:    optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
-			Venue:   optiomist.Some("Some venue"),
-			Address: optiomist.Some("Some address"),
-			Town:    optiomist.Some("Some town"),
+			AccountId: optiomist.Some(accountId),
+			Date:      optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
+			Hour:      optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
+			Venue:     optiomist.Some("Some venue"),
+			Address:   optiomist.Some("Some address"),
+			Town:      optiomist.Some("Some town"),
 		}
 
 		id, err := r.Create(event)
@@ -103,8 +106,11 @@ func testEventsRepo_Find_not_nils(r *EventsRepo) func(*testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if params.ID.Value() != id {
-			t.Errorf("ID = %v; expected %v", params.ID.Value(), id)
+		if params.Id.Value() != id {
+			t.Errorf("Id = %v; expected %v", params.Id.Value(), id)
+		}
+		if params.AccountId.Value() != accountId {
+			t.Errorf("AccountId = %v; expected %v", params.AccountId.Value(), accountId)
 		}
 		if params.Date != event.Date {
 			t.Errorf("Date = %v; expected %v", params.Date.Value(), event.Date.Value())
@@ -124,14 +130,15 @@ func testEventsRepo_Find_not_nils(r *EventsRepo) func(*testing.T) {
 	}
 }
 
-func testEventsRepo_Find_nils(r *EventsRepo) func(*testing.T) {
+func testEventsRepo_Find_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
 		event := audiofeeler.Event{
-			Date:    optiomist.None[time.Time](),
-			Hour:    optiomist.Nil[time.Time](),
-			Venue:   optiomist.None[string](),
-			Address: optiomist.Nil[string](),
-			Town:    optiomist.None[string](),
+			AccountId: optiomist.Some(accountId),
+			Date:      optiomist.None[time.Time](),
+			Hour:      optiomist.Nil[time.Time](),
+			Venue:     optiomist.None[string](),
+			Address:   optiomist.Nil[string](),
+			Town:      optiomist.None[string](),
 		}
 
 		id, err := r.Create(event)
@@ -142,8 +149,11 @@ func testEventsRepo_Find_nils(r *EventsRepo) func(*testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if found.ID.Value() != id {
-			t.Errorf("ID = %v; expected %v", found.ID.Value(), id)
+		if found.Id.Value() != id {
+			t.Errorf("Id = %v; expected %v", found.Id.Value(), id)
+		}
+		if found.AccountId.Value() != accountId {
+			t.Errorf("AccountId = %v; expected %v", found.AccountId.Value(), accountId)
 		}
 		if found.Date.IsSome() {
 			t.Errorf("Date = %v; expected none", found.Date.Value())

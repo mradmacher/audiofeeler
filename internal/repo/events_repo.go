@@ -9,12 +9,13 @@ import (
 )
 
 type dbEvent struct {
-	ID      pgtype.Uint32
-	Date    pgtype.Date
-	Hour    pgtype.Time
-	Venue   pgtype.Text
-	Address pgtype.Text
-	Town    pgtype.Text
+	id        pgtype.Uint32
+	accountId pgtype.Uint32
+	date      pgtype.Date
+	hour      pgtype.Time
+	venue     pgtype.Text
+	address   pgtype.Text
+	town      pgtype.Text
 }
 
 type EventsRepo struct {
@@ -23,11 +24,12 @@ type EventsRepo struct {
 
 func (repo *EventsRepo) Create(event audiofeeler.Event) (uint32, error) {
 	fields := Fields{
-		"date":    event.Date,
-		"hour":    event.Hour,
-		"venue":   event.Venue,
-		"address": event.Address,
-		"town":    event.Town,
+		"account_id": event.AccountId,
+		"date":       event.Date,
+		"hour":       event.Hour,
+		"venue":      event.Venue,
+		"address":    event.Address,
+		"town":       event.Town,
 	}
 	query, values := fields.BuildInsert("events")
 	row := repo.Db.Conn.QueryRow(context.Background(),
@@ -41,13 +43,14 @@ func (repo *EventsRepo) Create(event audiofeeler.Event) (uint32, error) {
 
 func buildEventParams(event dbEvent) *audiofeeler.Event {
 	aEvent := audiofeeler.Event{
-		ID:      optiomist.Optiomize(event.ID.Uint32, event.ID.Valid),
-		Date:    optiomist.Optiomize(event.Date.Time, event.Date.Valid),
-		Venue:   optiomist.Optiomize(event.Venue.String, event.Venue.Valid),
-		Address: optiomist.Optiomize(event.Address.String, event.Address.Valid),
-		Town:    optiomist.Optiomize(event.Town.String, event.Town.Valid),
+		Id:        optiomist.Optiomize(event.id.Uint32, event.id.Valid),
+		AccountId: optiomist.Optiomize(event.accountId.Uint32, event.accountId.Valid),
+		Date:      optiomist.Optiomize(event.date.Time, event.date.Valid),
+		Venue:     optiomist.Optiomize(event.venue.String, event.venue.Valid),
+		Address:   optiomist.Optiomize(event.address.String, event.address.Valid),
+		Town:      optiomist.Optiomize(event.town.String, event.town.Valid),
 	}
-	opt := optiomist.Optiomize(event.Hour.Microseconds, event.Hour.Valid)
+	opt := optiomist.Optiomize(event.hour.Microseconds, event.hour.Valid)
 	if opt.IsSome() {
 		aEvent.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
 	} else {
@@ -59,7 +62,7 @@ func buildEventParams(event dbEvent) *audiofeeler.Event {
 func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
 	row := repo.Db.Conn.QueryRow(context.Background(),
 		`
-        SELECT id, date, hour, venue, address, town
+        SELECT id, account_id, date, hour, venue, address, town
 		FROM events
 		WHERE id = $1
         `,
@@ -68,12 +71,13 @@ func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
 
 	var event dbEvent
 	err := row.Scan(
-		&event.ID,
-		&event.Date,
-		&event.Hour,
-		&event.Venue,
-		&event.Address,
-		&event.Town,
+		&event.id,
+		&event.accountId,
+		&event.date,
+		&event.hour,
+		&event.venue,
+		&event.address,
+		&event.town,
 	)
 
 	if err != nil {
@@ -83,12 +87,12 @@ func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
 	return buildEventParams(event), nil
 }
 
-func (repo *EventsRepo) All() (*[]audiofeeler.Event, error) {
+func (repo *EventsRepo) FindAll() (*[]audiofeeler.Event, error) {
 	var events []audiofeeler.Event
 
 	rows, err := repo.Db.Conn.Query(context.Background(),
 		`
-        SELECT id, date, hour, venue, address, town FROM events;
+        SELECT id, account_id, date, hour, venue, address, town FROM events;
         `,
 	)
 	defer rows.Close()
@@ -98,12 +102,13 @@ func (repo *EventsRepo) All() (*[]audiofeeler.Event, error) {
 	for rows.Next() {
 		var event dbEvent
 		err = rows.Scan(
-			&event.ID,
-			&event.Date,
-			&event.Hour,
-			&event.Venue,
-			&event.Address,
-			&event.Town,
+			&event.id,
+			&event.accountId,
+			&event.date,
+			&event.hour,
+			&event.venue,
+			&event.address,
+			&event.town,
 		)
 
 		events = append(events, *buildEventParams(event))
