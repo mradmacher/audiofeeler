@@ -3,7 +3,6 @@ module github.com/mradmacher/audiofeeler
 go 1.22
 
 require (
-	github.com/go-chi/chi/v5 v5.0.10
 	github.com/jackc/pgx/v5 v5.5.3
 	gopkg.in/yaml.v3 v3.0.1
 )

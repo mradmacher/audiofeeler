@@ -1,19 +1,18 @@
 package audiofeeler
 
 import (
-	"github.com/go-chi/chi/v5"
 	"html/template"
 	"net/http"
 )
 
 type App struct {
-	router   *chi.Mux
+	router   *http.ServeMux
 	template *template.Template
 }
 
 func NewApp(templatesPath string) (*App, error) {
 	app := App{}
-	app.router = chi.NewRouter()
+	app.router = http.DefaultServeMux
 
 	var err error
 
@@ -27,7 +26,7 @@ func NewApp(templatesPath string) (*App, error) {
 }
 
 func (app *App) MountHandlers() {
-	app.router.Get("/", app.homeHandler)
+	app.router.HandleFunc( "GET /", app.homeHandler)
 }
 
 func (app *App) Start() {
