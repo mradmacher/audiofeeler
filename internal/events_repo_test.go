@@ -1,7 +1,6 @@
-package repo
+package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/internal"
 	"github.com/mradmacher/audiofeeler/optiomist"
 	"testing"
 	"time"
@@ -9,9 +8,10 @@ import (
 
 func setupAccount(db *DbClient, t *testing.T) uint32 {
 	accountsRepo := AccountsRepo{db}
-	accountId, err := accountsRepo.Create(audiofeeler.Account{
-		Name: optiomist.Some("example"),
-		Url:  optiomist.Some("http://example.com"),
+	accountId, err := accountsRepo.Create(Account{
+		Name:  optiomist.Some("example"),
+		Title: optiomist.Some("Example"),
+		Url:   optiomist.Some("http://example.com"),
 	})
 	if err != nil {
 		t.Fatalf("Failed to create account: %v", err)
@@ -37,11 +37,11 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
-			event audiofeeler.Event
+			event Event
 		}{
 			{
 				"some params",
-				audiofeeler.Event{
+				Event{
 					AccountId: optiomist.Some(accountId),
 					Date:      optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
 					Hour:      optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
@@ -51,7 +51,7 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 				},
 			}, {
 				"none params",
-				audiofeeler.Event{
+				Event{
 					AccountId: optiomist.Some(accountId),
 					Date:      optiomist.None[time.Time](),
 					Hour:      optiomist.None[time.Time](),
@@ -61,7 +61,7 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 				},
 			}, {
 				"nil params",
-				audiofeeler.Event{
+				Event{
 					AccountId: optiomist.Some(accountId),
 					Date:      optiomist.Nil[time.Time](),
 					Hour:      optiomist.Nil[time.Time](),
@@ -89,7 +89,7 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 
 func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
-		event := audiofeeler.Event{
+		event := Event{
 			AccountId: optiomist.Some(accountId),
 			Date:      optiomist.Some(time.Date(2024, 2, 1, 0, 0, 0, 0, time.UTC)),
 			Hour:      optiomist.Some(time.Date(0, 0, 0, 21, 0, 0, 0, time.UTC)),
@@ -132,7 +132,7 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing
 
 func testEventsRepo_Find_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
 	return func(t *testing.T) {
-		event := audiofeeler.Event{
+		event := Event{
 			AccountId: optiomist.Some(accountId),
 			Date:      optiomist.None[time.Time](),
 			Hour:      optiomist.Nil[time.Time](),

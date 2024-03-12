@@ -1,15 +1,33 @@
-package repo
+package audiofeeler
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type RecordNotFound struct{}
+
+func (err RecordNotFound) Error() string {
+	return "No record found in database"
+}
+
+func newRecordNotFound() error {
+	return RecordNotFound{}
+}
+
+func wrapRecordNotFound(err error) error {
+	if err == pgx.ErrNoRows {
+		return newRecordNotFound()
+	}
+	return err
+}
 
 type DbClient struct {
 	Conn *pgxpool.Pool
 }
 
-func Connect(dbUrl string) (*DbClient, error) {
+func NewDbClient(dbUrl string) (*DbClient, error) {
 	conn, err := pgxpool.New(context.Background(), dbUrl)
 	if err != nil {
 		return nil, err
@@ -37,6 +55,7 @@ func (db *DbClient) CreateStructure() error {
 		CREATE TABLE IF NOT EXISTS accounts (
 			id SERIAL PRIMARY KEY,
 			name VARCHAR(255) UNIQUE NOT NULL,
+			title VARCHAR(255) NOT NULL,
 			url VARCHAR(255) UNIQUE NOT NULL
 		);
 
@@ -64,7 +83,6 @@ func (db *DbClient) RemoveStructure() error {
 	_, err := db.Conn.Exec(
 		context.Background(),
 		`
-		DELETE FROM accounts;
 		DROP TABLE IF EXISTS events;
 		DROP TABLE IF EXISTS accounts;
 		`,

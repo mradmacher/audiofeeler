@@ -6,9 +6,10 @@ import (
 )
 
 type Account struct {
-	Id   optiomist.Option[uint32]
-	Name optiomist.Option[string]
-	Url  optiomist.Option[string]
+	Id    optiomist.Option[uint32]
+	Name  optiomist.Option[string]
+	Title optiomist.Option[string]
+	Url   optiomist.Option[string]
 }
 
 type Event struct {

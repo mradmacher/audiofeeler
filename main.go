@@ -10,6 +10,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer app.Cleanup()
+
 	fmt.Println("Starting the server on :3000...")
 	app.Start()
 }

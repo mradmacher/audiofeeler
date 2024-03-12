@@ -1,4 +1,4 @@
-package repo
+package audiofeeler
 
 import (
 	"github.com/mradmacher/audiofeeler/optiomist"

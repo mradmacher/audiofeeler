@@ -1,9 +1,8 @@
-package repo
+package audiofeeler
 
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mradmacher/audiofeeler/internal"
 	"github.com/mradmacher/audiofeeler/optiomist"
 	"time"
 )
@@ -22,7 +21,7 @@ type EventsRepo struct {
 	Db *DbClient
 }
 
-func (repo *EventsRepo) Create(event audiofeeler.Event) (uint32, error) {
+func (repo *EventsRepo) Create(event Event) (uint32, error) {
 	fields := Fields{
 		"account_id": event.AccountId,
 		"date":       event.Date,
@@ -41,8 +40,8 @@ func (repo *EventsRepo) Create(event audiofeeler.Event) (uint32, error) {
 	return id, err
 }
 
-func buildEventParams(record eventRecord) *audiofeeler.Event {
-	event := audiofeeler.Event{
+func buildEventParams(record eventRecord) *Event {
+	event := Event{
 		Id:        optiomist.Optiomize(record.id.Uint32, record.id.Valid),
 		AccountId: optiomist.Optiomize(record.accountId.Uint32, record.accountId.Valid),
 		Date:      optiomist.Optiomize(record.date.Time, record.date.Valid),
@@ -59,7 +58,7 @@ func buildEventParams(record eventRecord) *audiofeeler.Event {
 	return &event
 }
 
-func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
+func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 	row := repo.Db.Conn.QueryRow(context.Background(),
 		`
         SELECT id, account_id, date, hour, venue, address, town
@@ -87,8 +86,8 @@ func (repo *EventsRepo) Find(id uint32) (*audiofeeler.Event, error) {
 	return buildEventParams(record), nil
 }
 
-func (repo *EventsRepo) FindAll() (*[]audiofeeler.Event, error) {
-	var events []audiofeeler.Event
+func (repo *EventsRepo) FindAll() (*[]Event, error) {
+	var events []Event
 
 	rows, err := repo.Db.Conn.Query(context.Background(),
 		`

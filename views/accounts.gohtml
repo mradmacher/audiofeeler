@@ -4,9 +4,9 @@
   {{ range .Accounts }}
   <article>
     <header>
-      <a href="/{{ .Name }}">{{ .Title }}</a>
+      <h2><a href="/{{ .Name }}">{{ .Title }}</a></h2>
     </header>
-    <strong>{{ .Url }}</strong>
+    {{ .Url }}
   </article>
   {{ end }}
 </section>

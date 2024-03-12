@@ -1,4 +1,4 @@
-package repo
+package audiofeeler
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 )
 
 func setupTest(t *testing.T) (func(*testing.T), *DbClient) {
-	db, err := Connect(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
+	db, err := NewDbClient(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
 		t.Fatal("Can't connect to DB")
 	}
