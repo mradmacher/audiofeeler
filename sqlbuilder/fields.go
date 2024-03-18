@@ -1,9 +1,9 @@
-package audiofeeler
+package sqlbuilder
 
 import (
 	"fmt"
-	"github.com/mradmacher/audiofeeler/optiomist"
 	"strings"
+	"github.com/mradmacher/audiofeeler/optiomist"
 )
 
 type Fields map[string]optiomist.Optionable

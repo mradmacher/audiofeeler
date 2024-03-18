@@ -1,9 +1,9 @@
-package audiofeeler
+package sqlbuilder
 
 import (
-	"github.com/mradmacher/audiofeeler/optiomist"
 	"reflect"
 	"testing"
+	"github.com/mradmacher/audiofeeler/optiomist"
 )
 
 type PossibleResult struct {

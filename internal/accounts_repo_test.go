@@ -55,7 +55,7 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 			t.Errorf("error == %v; expected: RecordNotFound", err)
 		}
 
-		_, err = r.Create(Account{
+		id, err := r.Create(Account{
 			Name:  optiomist.Some("someaccount"),
 			Title: optiomist.Some("Some Account"),
 			Url:   optiomist.Some("http://someaccount.com"),
@@ -81,8 +81,17 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 				t.Fatalf("Error retrieving account: %v", err)
 			}
 		}
+		if got.Id.Value() != id {
+			t.Errorf("got == %v; expected: %v", got.Id.Value(), id)
+		}
 		if got.Name.Value() != "someaccount" {
 			t.Errorf("got == %v; expected: %v", got.Name.Value(), "someaccount")
+		}
+		if got.Title.Value() != "Some Account" {
+			t.Errorf("got == %v; expected: %v", got.Title.Value(), "Some Account")
+		}
+		if got.Url.Value() != "http://someaccount.com" {
+			t.Errorf("got == %v; expected: %v", got.Url.Value(), "http://someaccount.com")
 		}
 
 		got, err = r.FindByName("yetanotheraccount")

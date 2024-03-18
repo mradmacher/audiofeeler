@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/sqlbuilder"
 )
 
 type accountRecord struct {
@@ -18,7 +19,7 @@ type AccountsRepo struct {
 }
 
 func (repo *AccountsRepo) Create(account Account) (uint32, error) {
-	fields := Fields{
+	fields := sqlbuilder.Fields{
 		"name":  account.Name,
 		"title": account.Title,
 		"url":   account.Url,

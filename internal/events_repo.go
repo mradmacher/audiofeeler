@@ -2,9 +2,10 @@ package audiofeeler
 
 import (
 	"context"
+	"time"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mradmacher/audiofeeler/optiomist"
-	"time"
+	"github.com/mradmacher/audiofeeler/sqlbuilder"
 )
 
 type eventRecord struct {
@@ -22,7 +23,7 @@ type EventsRepo struct {
 }
 
 func (repo *EventsRepo) Create(event Event) (uint32, error) {
-	fields := Fields{
+	fields := sqlbuilder.Fields{
 		"account_id": event.AccountId,
 		"date":       event.Date,
 		"hour":       event.Hour,
