@@ -14,6 +14,7 @@ func TestAccountsRepo(t *testing.T) {
 
 	t.Run("Create with all params", testCreate_allParams(&r))
 	t.Run("Create with missing params", testCreate_missingParams(&r))
+	t.Run("Create with duplicated name", testCreate_duplicatedName(&r))
 	t.Run("FindAll", testFindAll(&r))
 	t.Run("FindByName", testFindByName(&r))
 }
@@ -75,6 +76,24 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 	}
 }
 
+func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
+	return func(t *testing.T) {
+		account := Account{
+			Name:  optiomist.Some("this-is-unique"),
+			Title: optiomist.Some("Example"),
+		}
+		_, err := r.Create(account)
+		assert.NilError(t, err)
+
+		dupAccount := Account{
+			Name:  optiomist.Some("this-is-unique"),
+			Title: optiomist.Some("Other Example"),
+		}
+		_, err = r.Create(dupAccount)
+		assert.Check(t, err != nil, "It should not create record with duplicated name")
+	}
+}
+
 func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
@@ -82,13 +101,6 @@ func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 			account Account
 		}{
 			{
-				"missing url",
-				Account{
-					Name:  optiomist.Some("onlyexample"),
-					Title: optiomist.Some("Example"),
-					Url:   optiomist.None[string](),
-				},
-			}, {
 				"missing name",
 				Account{
 					Name:  optiomist.None[string](),
@@ -108,9 +120,7 @@ func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 			t.Run(test.name, func(t *testing.T) {
 				_, err := r.Create(test.account)
 
-				if err == nil {
-					t.Error("It should not create record with missing data")
-				}
+				assert.Check(t, err != nil, "It should not create record with missing data")
 			})
 		}
 	}

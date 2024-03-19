@@ -28,7 +28,6 @@ func exampleAccounts() []audiofeeler.Account {
 		audiofeeler.Account {
 			Title: optiomist.Some("Iglika"),
 			Name: optiomist.Some("iglika"),
-			Url: optiomist.Some("http://iglika.eu"),
 		},
 	}
 }
