@@ -2,8 +2,8 @@ package sqlbuilder
 
 import (
 	"fmt"
-	"strings"
 	"github.com/mradmacher/audiofeeler/optiomist"
+	"strings"
 )
 
 type Fields map[string]optiomist.Optionable

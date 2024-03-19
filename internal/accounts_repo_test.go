@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccountsRepo(t *testing.T) {
-	teardown, db := setupTest(t)
+	teardown, db := setupDbTest(t)
 	defer teardown(t)
 
 	r := AccountsRepo{db}

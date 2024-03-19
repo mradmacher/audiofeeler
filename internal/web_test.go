@@ -8,7 +8,7 @@ import (
 )
 
 func TestHome(t *testing.T) {
-	teardown, _ := setupTest(t)
+	teardown, _ := setupDbTest(t)
 	defer teardown(t)
 
 	app, err := NewApp("../views", os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
