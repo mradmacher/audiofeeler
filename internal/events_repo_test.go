@@ -2,6 +2,7 @@ package audiofeeler
 
 import (
 	"github.com/mradmacher/audiofeeler/optiomist"
+	"gotest.tools/v3/assert"
 	"testing"
 	"time"
 )
@@ -13,9 +14,7 @@ func setupAccount(db *DbClient, t *testing.T) uint32 {
 		Title: optiomist.Some("Example"),
 		Url:   optiomist.Some("http://example.com"),
 	})
-	if err != nil {
-		t.Fatalf("Failed to create account: %v", err)
-	}
+	assert.NilError(t, err)
 
 	return accountId
 }
@@ -76,12 +75,8 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 			t.Run(test.name, func(t *testing.T) {
 				id, err := r.Create(test.event)
 
-				if err != nil {
-					t.Fatal(err)
-				}
-				if id <= 0 {
-					t.Error("Id needs to be a positive number")
-				}
+				assert.NilError(t, err)
+				assert.Check(t, id > 0)
 			})
 		}
 	}
@@ -99,34 +94,18 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing
 		}
 
 		id, err := r.Create(event)
-		if err != nil {
-			t.Fatal(err)
-		}
-		params, err := r.Find(id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if params.Id.Value() != id {
-			t.Errorf("Id = %v; expected %v", params.Id.Value(), id)
-		}
-		if params.AccountId.Value() != accountId {
-			t.Errorf("AccountId = %v; expected %v", params.AccountId.Value(), accountId)
-		}
-		if params.Date != event.Date {
-			t.Errorf("Date = %v; expected %v", params.Date.Value(), event.Date.Value())
-		}
-		if !params.Hour.IsSome() || !event.Hour.IsSome() || params.Hour.Value().Format(time.TimeOnly) != event.Hour.Value().Format(time.TimeOnly) {
-			t.Errorf("Hour = %v; expected %v", params.Hour.Value(), event.Hour.Value())
-		}
-		if params.Venue != event.Venue {
-			t.Errorf("Venue = %v; expected %v", params.Venue.Value(), event.Venue.Value())
-		}
-		if params.Address != event.Address {
-			t.Errorf("Address = %v; expected %v", params.Address.Value(), event.Address.Value())
-		}
-		if params.Town != event.Town {
-			t.Errorf("Town = %v; expected %v", params.Town.Value(), event.Town.Value())
-		}
+		assert.NilError(t, err)
+
+		got, err := r.Find(id)
+		assert.NilError(t, err)
+
+		assert.Equal(t, got.Id.Value(), id)
+		assert.Equal(t, got.AccountId.Value(), accountId)
+		assert.Equal(t, got.Date, event.Date)
+		assert.Check(t, got.Hour.IsSome() && event.Hour.IsSome() && got.Hour.Value().Format(time.TimeOnly) == event.Hour.Value().Format(time.TimeOnly))
+		assert.Equal(t, got.Venue, event.Venue)
+		assert.Equal(t, got.Address, event.Address)
+		assert.Equal(t, got.Town, event.Town)
 	}
 }
 
@@ -145,30 +124,14 @@ func testEventsRepo_Find_nils(r *EventsRepo, accountId uint32) func(*testing.T) 
 		if err != nil {
 			t.Fatal(err)
 		}
-		found, err := r.Find(id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if found.Id.Value() != id {
-			t.Errorf("Id = %v; expected %v", found.Id.Value(), id)
-		}
-		if found.AccountId.Value() != accountId {
-			t.Errorf("AccountId = %v; expected %v", found.AccountId.Value(), accountId)
-		}
-		if found.Date.IsSome() {
-			t.Errorf("Date = %v; expected none", found.Date.Value())
-		}
-		if found.Hour.IsSome() {
-			t.Errorf("Hour = %v; expected none", found.Hour.Value())
-		}
-		if found.Venue.IsSome() {
-			t.Errorf("Venue = %v; expected none", found.Venue.Value())
-		}
-		if found.Address.IsSome() {
-			t.Errorf("Address = %v; expected none", found.Address.Value())
-		}
-		if found.Town.IsSome() {
-			t.Errorf("Town = %v; expected none", found.Town.Value())
-		}
+		got, err := r.Find(id)
+		assert.NilError(t, err)
+		assert.Equal(t, got.Id.Value(), id)
+		assert.Equal(t, got.AccountId.Value(), accountId)
+		assert.Check(t, got.Date.IsNone())
+		assert.Check(t, got.Hour.IsNone())
+		assert.Check(t, got.Venue.IsNone())
+		assert.Check(t, got.Address.IsNone())
+		assert.Check(t, got.Town.IsNone())
 	}
 }

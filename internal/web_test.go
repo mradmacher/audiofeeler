@@ -3,11 +3,15 @@ package audiofeeler
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 func TestHome(t *testing.T) {
-	app, err := NewApp("../views")
+	teardown, _ := setupTest(t)
+	defer teardown(t)
+
+	app, err := NewApp("../views", os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
 		t.Errorf("Error creating the app: %v", err)
 	}

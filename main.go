@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"github.com/mradmacher/audiofeeler/internal"
 )
 
 func main() {
-	app, err := audiofeeler.NewApp("views")
+	app, err := audiofeeler.NewApp("views", os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}

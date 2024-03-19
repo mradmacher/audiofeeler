@@ -2,10 +2,10 @@ package audiofeeler
 
 import (
 	"context"
-	"time"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mradmacher/audiofeeler/optiomist"
 	"github.com/mradmacher/audiofeeler/sqlbuilder"
+	"time"
 )
 
 type eventRecord struct {

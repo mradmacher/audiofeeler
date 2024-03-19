@@ -8,11 +8,11 @@ import (
 func setupTest(t *testing.T) (func(*testing.T), *DbClient) {
 	db, err := NewDbClient(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
-		t.Fatal("Can't connect to DB")
+		t.Fatalf("Can't connect to DB: %v", err)
 	}
 	err = db.CreateStructure()
 	if err != nil {
-		t.Fatal("Can't create tables")
+		t.Fatalf("Can't create tables: %v", err)
 	}
 	return func(t *testing.T) {
 		db.RemoveStructure()

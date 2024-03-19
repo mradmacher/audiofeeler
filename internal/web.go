@@ -3,7 +3,6 @@ package audiofeeler
 import (
 	"html/template"
 	"net/http"
-	"os"
 )
 
 type AccountView struct {
@@ -20,7 +19,7 @@ type App struct {
 	db            *DbClient
 }
 
-func NewApp(templatesPath string) (*App, error) {
+func NewApp(templatesPath string, dbUrl string) (*App, error) {
 	app := App{}
 	app.router = http.DefaultServeMux
 
@@ -39,7 +38,7 @@ func NewApp(templatesPath string) (*App, error) {
 	app.MountHandlers()
 
 	var err error
-	app.db, err = NewDbClient(os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	app.db, err = NewDbClient(dbUrl)
 	if err != nil {
 		panic(err)
 	}

@@ -83,6 +83,7 @@ func (db *DbClient) RemoveStructure() error {
 	_, err := db.Conn.Exec(
 		context.Background(),
 		`
+		DROP INDEX IF EXISTS events_account_id_idx;
 		DROP TABLE IF EXISTS events;
 		DROP TABLE IF EXISTS accounts;
 		`,
