@@ -1,4 +1,4 @@
-package repo
+package sqlbuilder
 
 import (
 	"github.com/mradmacher/audiofeeler/optiomist"

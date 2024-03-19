@@ -1,0 +1,13 @@
+{{define "main"}}
+<section>
+  <h1>Accounts</h1>
+  {{ range .Accounts }}
+  <article>
+    <header>
+      <h2><a href="/{{ .Name }}">{{ .Title }}</a></h2>
+    </header>
+    {{ .Url }}
+  </article>
+  {{ end }}
+</section>
+{{end}}
