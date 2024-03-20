@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/mradmacher/audiofeeler/internal"
+	"github.com/mradmacher/audiofeeler/internal/store"
 	"os"
 )
 
 func main() {
-	db, err := audiofeeler.NewDbClient(os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	db, err := store.NewDbClient(os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +18,7 @@ func main() {
 	//    fmt.Println("Tables dropped")
 	//}()
 
-	r := audiofeeler.EventsRepo{db}
+	r := store.EventsRepo{db}
 	events, err := r.FindAll()
 	if err != nil {
 		panic(err)

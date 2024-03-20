@@ -3,37 +3,37 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/mradmacher/audiofeeler/internal"
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/internal/store"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"os"
 )
 
-func exampleAccounts() []audiofeeler.Account {
-	return []audiofeeler.Account {
-		audiofeeler.Account {
+func exampleAccounts() []store.Account {
+	return []store.Account {
+		store.Account {
 			Title: optiomist.Some("Czarny Motyl"),
 			Name: optiomist.Some("czarnymotyl"),
 			Url: optiomist.Some("http://czarnymotyl.art"),
 		},
-		audiofeeler.Account {
+		store.Account {
 			Title: optiomist.Some("Karoryfer Lecolds"),
 			Name: optiomist.Some("karoryfer"),
 			Url: optiomist.Some("http://karoryfer.com"),
 		},
-		audiofeeler.Account {
+		store.Account {
 			Title: optiomist.Some("BalkanArtz"),
 			Name: optiomist.Some("balkanartz"),
 			Url: optiomist.Some("http://balkanartz.eu"),
 		},
-		audiofeeler.Account {
+		store.Account {
 			Title: optiomist.Some("Iglika"),
 			Name: optiomist.Some("iglika"),
 		},
 	}
 }
 
-func createExampleData(db *audiofeeler.DbClient) {
-	r := audiofeeler.AccountsRepo{db}
+func createExampleData(db *store.DbClient) {
+	r := store.AccountsRepo{db}
 
 	for _, account := range exampleAccounts() {
 		id, err := r.Create(account)
@@ -41,14 +41,14 @@ func createExampleData(db *audiofeeler.DbClient) {
 	}
 }
 
-func loadEvents(db *audiofeeler.DbClient, fileName string) {
+func loadEvents(db *store.DbClient, fileName string) {
 	jsonBlob, err := os.ReadFile(fileName)
-	events, err := audiofeeler.LoadEvents(bytes.NewReader(jsonBlob))
+	events, err := store.LoadEvents(bytes.NewReader(jsonBlob))
 	if err != nil {
 		panic(err)
 	}
 
-	r := audiofeeler.EventsRepo{db}
+	r := store.EventsRepo{db}
 
 	for _, event := range events {
 		id, err := r.Create(event)
@@ -57,7 +57,7 @@ func loadEvents(db *audiofeeler.DbClient, fileName string) {
 }
 
 func main() {
-	db, err := audiofeeler.NewDbClient(os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	db, err := store.NewDbClient(os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}

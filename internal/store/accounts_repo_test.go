@@ -1,13 +1,13 @@
-package audiofeeler
+package store
 
 import (
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 )
 
 func TestAccountsRepo(t *testing.T) {
-	teardown, db := setupDbTest(t)
+	teardown, db := SetupDbTest(t)
 	defer teardown(t)
 
 	r := AccountsRepo{db}

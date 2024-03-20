@@ -1,6 +1,7 @@
-package audiofeeler
+package web
 
 import (
+	"github.com/mradmacher/audiofeeler/internal/store"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -8,10 +9,10 @@ import (
 )
 
 func TestHome(t *testing.T) {
-	teardown, _ := setupDbTest(t)
+	teardown, _ := store.SetupDbTest(t)
 	defer teardown(t)
 
-	app, err := NewApp("../views", os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
+	app, err := NewApp("../../views", os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
 		t.Errorf("Error creating the app: %v", err)
 	}

@@ -1,7 +1,7 @@
-package audiofeeler
+package store
 
 import (
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gopkg.in/yaml.v3"
 	"io"
 	"time"
