@@ -1,6 +1,7 @@
-package audiofeeler
+package web
 
 import (
+	"github.com/mradmacher/audiofeeler/internal/store"
 	"html/template"
 	"net/http"
 )
@@ -16,7 +17,7 @@ type App struct {
 	router        *http.ServeMux
 	indexTemplate *template.Template
 	showTemplate  *template.Template
-	db            *DbClient
+	db            *store.DbClient
 }
 
 func NewApp(templatesPath string, dbUrl string) (*App, error) {
@@ -38,7 +39,7 @@ func NewApp(templatesPath string, dbUrl string) (*App, error) {
 	app.MountHandlers()
 
 	var err error
-	app.db, err = NewDbClient(dbUrl)
+	app.db, err = store.NewDbClient(dbUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +62,7 @@ func (app *App) Cleanup() {
 
 func (app *App) accountHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	repo := AccountsRepo{app.db}
+	repo := store.AccountsRepo{app.db}
 	account, err := repo.FindByName(r.PathValue("name"))
 	if err != nil {
 		panic(err)
@@ -83,7 +84,7 @@ func (app *App) accountHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	repo := AccountsRepo{app.db}
+	repo := store.AccountsRepo{app.db}
 	accounts, err := repo.FindAll()
 	if err != nil {
 		panic(err)

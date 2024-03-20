@@ -1,11 +1,11 @@
-package audiofeeler
+package store
 
 import (
 	"os"
 	"testing"
 )
 
-func setupDbTest(t *testing.T) (func(*testing.T), *DbClient) {
+func SetupDbTest(t *testing.T) (func(*testing.T), *DbClient) {
 	db, err := NewDbClient(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
 		t.Fatalf("Can't connect to DB: %v", err)

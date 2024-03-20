@@ -2,22 +2,22 @@ package sqlbuilder
 
 import (
 	"fmt"
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"strings"
 )
 
 type Fields map[string]optiomist.Optionable
 
-func (fields *Fields) BuildInsert(tableName string) (string, []any) {
+func (fields Fields) BuildInsert(tableName string) (string, []any) {
 	// TODO:
-	// names := make([]string, len(*fields))
-	// params := make([]string, len(*fields))
-	// values := make([]any, len(*fields))
+	// names := make([]string, len(fields))
+	// params := make([]string, len(fields))
+	// values := make([]any, len(fields))
 	var names []string
 	var params []string
 	values := []any{}
 	n := 1
-	for name, value := range *fields {
+	for name, value := range fields {
 		if value.IsSome() {
 			names = append(names, name)
 			if value.IsNil() {

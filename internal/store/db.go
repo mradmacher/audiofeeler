@@ -1,4 +1,4 @@
-package audiofeeler
+package store
 
 import (
 	"context"

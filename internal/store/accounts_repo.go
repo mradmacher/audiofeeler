@@ -1,10 +1,10 @@
-package audiofeeler
+package store
 
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mradmacher/audiofeeler/optiomist"
-	"github.com/mradmacher/audiofeeler/sqlbuilder"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
 )
 
 type accountRecord struct {

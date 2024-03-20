@@ -1,7 +1,7 @@
-package audiofeeler
+package store
 
 import (
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 	"time"
@@ -20,7 +20,7 @@ func setupAccount(db *DbClient, t *testing.T) uint32 {
 }
 
 func TestEventsRepo(t *testing.T) {
-	teardown, db := setupDbTest(t)
+	teardown, db := SetupDbTest(t)
 	defer teardown(t)
 
 	accountId := setupAccount(db, t)
