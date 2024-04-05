@@ -3,8 +3,7 @@ package store
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
-	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
+	"github.com/mradmacher/audiofeeler/optiomist"
 	"time"
 )
 
@@ -23,7 +22,7 @@ type EventsRepo struct {
 }
 
 func (repo *EventsRepo) Create(event Event) (uint32, error) {
-	fields := sqlbuilder.Fields{
+	fields := optiomist.Fields{
 		"account_id": event.AccountId,
 		"date":       event.Date,
 		"hour":       event.Hour,

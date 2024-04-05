@@ -1,7 +1,6 @@
-package sqlbuilder
+package optiomist
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"reflect"
 	"testing"
 )
@@ -18,8 +17,8 @@ func TestFields_BuildInsert(t *testing.T) {
 	}{
 		{
 			fields: Fields{
-				"name": optiomist.Some("Jan Nowak"),
-				"age":  optiomist.Some(21),
+				"name": Some("Jan Nowak"),
+				"age":  Some(21),
 			},
 			possibleResults: []PossibleResult{{
 				sql: "INSERT INTO users (name, age) " +
@@ -32,9 +31,9 @@ func TestFields_BuildInsert(t *testing.T) {
 			}},
 		}, {
 			fields: Fields{
-				"first_name": optiomist.Some("Jan"),
-				"last_name":  optiomist.Some("Nowak"),
-				"age":        optiomist.Nil[int](),
+				"first_name": Some("Jan"),
+				"last_name":  Some("Nowak"),
+				"age":        Nil[int](),
 			},
 			possibleResults: []PossibleResult{{
 				sql: "INSERT INTO users (first_name, last_name, age) " +
@@ -63,8 +62,8 @@ func TestFields_BuildInsert(t *testing.T) {
 			}},
 		}, {
 			fields: Fields{
-				"name": optiomist.Nil[string](),
-				"age":  optiomist.Nil[int](),
+				"name": Nil[string](),
+				"age":  Nil[int](),
 			},
 			possibleResults: []PossibleResult{{
 				sql: "INSERT INTO users (name, age) " +
@@ -89,9 +88,9 @@ func TestFields_BuildInsert(t *testing.T) {
 			}},
 		}, {
 			fields: Fields{
-				"first_name": optiomist.None[string](),
-				"last_name":  optiomist.None[string](),
-				"age":        optiomist.None[int](),
+				"first_name": None[string](),
+				"last_name":  None[string](),
+				"age":        None[int](),
 			},
 			possibleResults: []PossibleResult{{
 				sql:    "INSERT INTO users DEFAULT VALUES RETURNING id",

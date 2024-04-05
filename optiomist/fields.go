@@ -1,12 +1,11 @@
-package sqlbuilder
+package optiomist
 
 import (
 	"fmt"
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"strings"
 )
 
-type Fields map[string]optiomist.Optionable
+type Fields map[string]Optionable
 
 func (fields Fields) BuildInsert(tableName string) (string, []any) {
 	// TODO:

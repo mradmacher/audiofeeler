@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/mradmacher/audiofeeler/internal/store"
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	"github.com/mradmacher/audiofeeler/optiomist"
 	"os"
 )
 

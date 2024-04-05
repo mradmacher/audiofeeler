@@ -48,6 +48,11 @@ func NewApp(templatesPath string, dbUrl string) (*App, error) {
 }
 
 func (app *App) MountHandlers() {
+	// app.router.Get("/js/*", staticHandler)
+	// app.router.Get("/assets/*", staticHandler)
+	//func staticHandler(w http.ResponseWriter, r *http.Request) {
+//		http.ServeFile(w, r, "."+r.URL.Path)
+//	}
 	app.router.HandleFunc("GET /{$}", app.homeHandler)
 	app.router.HandleFunc("GET /{name}", app.accountHandler)
 }

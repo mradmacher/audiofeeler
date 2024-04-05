@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	"github.com/mradmacher/audiofeeler/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 )
