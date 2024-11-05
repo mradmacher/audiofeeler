@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "esbuild js/index.js --bundle --outfile=assets/main.js"
+  }
+},
+{
+  "devDependencies": {
+    "esbuild": "0.20.2"
+  }
+}
