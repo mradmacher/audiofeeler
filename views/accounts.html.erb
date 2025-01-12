@@ -1,0 +1,11 @@
+<section>
+  <h1>Accounts</h1>
+  <% @accounts.each do |account| %>
+  <article>
+    <header>
+      <h2><a href="/<%= account.name %>"><%= account.title %></a></h2>
+    </header>
+    <%= account.url %>
+  </article>
+  <% end %>
+</section>

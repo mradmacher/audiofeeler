@@ -1,0 +1,3 @@
+#!/bin/sh
+
+RACK_ENV=production ruby app.rb -p 9292 -o 0.0.0.0
