@@ -1,8 +1,7 @@
-{{define "main"}}
 <section>
   <hgroup>
-    <h1><a href="/{{ .Name }}">{{ .Title }}</a></h1>
-    <small><a href="{{ .Url }}" target="_blank">{{ .Url }}</a></small>
+    <h1><a href="/<%= @account.name %>"><%= @account.title %></a></h1>
+    <small><a href="<%= @account.url %>" target="_blank"><%= @account.url %></a></small>
   </hgroup>
   <img src="" />
   <nav>
@@ -14,4 +13,3 @@
     </ul>
   </nav>
 </section>
-{{end}}
