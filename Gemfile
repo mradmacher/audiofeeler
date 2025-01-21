@@ -8,7 +8,6 @@ gem 'param_param', '~> 1.0.0'
 gem 'puma'
 gem 'rackup'
 gem 'rake'
-gem 'sequel'
 gem 'sqlite3'
 gem 'sinatra', '>= 4.1.1'
 
@@ -20,7 +19,6 @@ group :test, :development do
   gem 'rubocop'
   gem 'rubocop-minitest'
   gem 'rubocop-rake'
-  gem 'rubocop-sequel'
 end
 
 group :test do

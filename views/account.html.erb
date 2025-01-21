@@ -1,15 +1,41 @@
 <section>
   <hgroup>
-    <h1><a href="/<%= @account.name %>"><%= @account.title %></a></h1>
-    <small><a href="<%= @account.url %>" target="_blank"><%= @account.url %></a></small>
+    <h1><a href="/accounts/<%= @account.id %>"><%= @account.name %></a></h1>
   </hgroup>
   <img src="" />
   <nav>
     <ul>
-      <li><a>Events</a></li>
-      <li><a>Videos</a></li>
-      <li><a>Lyrics</a></li>
-      <li><a>Pages</a></li>
+      <li>
+        <a hx-get="/accounts/<%= @account.id %>/events"
+           hx-push-url="true"
+           hx-target="#resources-slot">
+           Events
+        </a>
+      </li>
+      <li>
+        <a hx-get="/accounts/<%= @account.id %>/videos"
+           hx-push-url="true"
+           hx-target="#resources-slot">
+           Videos
+        </a>
+      </li>
+      <li>
+        <a hx-get="/accounts/<%= @account.id %>/lyrics"
+           hx-push-url="true"
+           hx-target="#resources-slot">
+           Lyrics
+        </a>
+      </li>
+      <li>
+        <a hx-get="/accounts/<%= @account.id %>/pages"
+           hx-push-url="true"
+           hx-target="#resources-slot">
+           Pages
+        </a>
+      </li>
     </ul>
   </nav>
 </section>
+
+<section id="resources-slot">
+<section>
