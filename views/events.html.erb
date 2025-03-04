@@ -1,1 +1,42 @@
-No events yet
+<section>
+  <% if @events.empty? %>
+    <p>No events yet</p>
+  <% else %>
+    <ul>
+      <% @events.each do |event| %>
+        <li><%= event.venue %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
+
+<article>
+  <header>New event</header>
+  <form method="post">
+    <fieldset class="grid">
+      <label>
+        Date
+        <input name="event[date]" />
+      </label>
+      <label>
+        Hour
+        <input name="event[hour]" />
+      </label>
+    </fieldset>
+    <fieldset>
+      <label>
+        Venue
+        <input name="event[venue]" />
+      </label>
+      <label>
+        Place
+        <input name="event[place]" />
+      </label>
+      <label>
+        Address
+        <input name="event[address]" />
+      </label>
+    </fieldset>
+    <button hx-post="/accounts/<%= @account.id %>/events" hx-target="#resources-slot">Add event</button>
+  </form>
+</article>

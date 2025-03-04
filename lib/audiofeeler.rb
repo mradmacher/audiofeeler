@@ -8,6 +8,16 @@ module Audiofeeler
 
     schema do
       attributes :name
+
+      has_many :events
+    end
+  end
+
+  class Event
+    include Entitainer
+
+    schema do
+      attributes :venue
     end
   end
 end

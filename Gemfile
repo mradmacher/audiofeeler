@@ -19,6 +19,7 @@ group :test, :development do
   gem 'rubocop'
   gem 'rubocop-minitest'
   gem 'rubocop-rake'
+  gem 'rerun'
 end
 
 group :test do
