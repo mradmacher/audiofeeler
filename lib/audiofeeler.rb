@@ -17,7 +17,11 @@ module Audiofeeler
     include Entitainer
 
     schema do
+      attributes :date
+      attributes :hour
       attributes :venue
+      attributes :place
+      attributes :address
     end
   end
 end

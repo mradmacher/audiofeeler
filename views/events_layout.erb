@@ -1,13 +1,5 @@
 <section>
-  <% if @events.empty? %>
-    <p>No events yet</p>
-  <% else %>
-    <ul>
-      <% @events.each do |event| %>
-        <li><%= event.venue %></li>
-      <% end %>
-    </ul>
-  <% end %>
+  <%= yield %>
 </section>
 
 <article>
@@ -40,3 +32,4 @@
     <button hx-post="/accounts/<%= @account.id %>/events" hx-target="#resources-slot">Add event</button>
   </form>
 </article>
+
