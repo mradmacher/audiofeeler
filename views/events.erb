@@ -9,6 +9,7 @@
           <th>Hour</th>
           <th>Venue</th>
           <th>Place</th>
+          <th>City</th>
           <th>Address</th>
           <th></th>
         </tr>
@@ -20,6 +21,7 @@
           <td><%= event.hour %></td>
           <td><%= event.venue %></td>
           <td><%= event.place %></td>
+          <td><%= event.city %></td>
           <td><%= event.address %></td>
           <td><button hx-get="/accounts/<%= @account.id %>/events/<%= event.id %>/edit" hx-target="#event-form">Edit</button></td>
         </tr>

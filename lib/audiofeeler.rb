@@ -24,6 +24,7 @@ module Audiofeeler
       attributes :hour
       attributes :venue
       attributes :place
+      attributes :city
       attributes :address
     end
   end

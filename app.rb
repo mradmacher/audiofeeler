@@ -40,6 +40,7 @@ DB.execute <<SQL
     hour TEXT,
     venue TEXT,
     place TEXT,
+    city TEXT,
     address TEXT,
     FOREIGN KEY(account_id) REFERENCES accounts(id)
   );
@@ -72,35 +73,35 @@ class EventRepo
   end
 
   def find_all(account_id)
-    result = @db.execute "SELECT id, date, hour, venue, place, address FROM events WHERE account_id = ?", account_id
+    result = @db.execute "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ?", account_id
 
     events = result.map do |r|
-      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], address: r[5])
+      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], city: r[5], address: r[6])
     end
 
     Result.success(events)
   end
 
   def find_one(account_id, event_id)
-    result = @db.execute "SELECT id, date, hour, venue, place, address FROM events WHERE account_id = ? and id = ?", [account_id, event_id]
+    result = @db.execute "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ? and id = ?", [account_id, event_id]
     return Result.failure(:not_found) if result.empty?
 
     r = result.first
     Result.success(
-      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], address: r[5])
+      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], city: r[5], address: r[6])
     )
   end
 
   def create(account_id, params)
-    @db.execute "INSERT INTO events (account_id, date, hour, venue, place, address) VALUES (?, ?, ?, ?, ?, ?)",
-      [account_id, params[:date], params[:hour], params[:venue], params[:place], params[:address]]
+    @db.execute "INSERT INTO events (account_id, date, hour, venue, place, city, address) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [account_id, params[:date], params[:hour], params[:venue], params[:place], params[:city], params[:address]]
 
     Result.success
   end
 
   def update(account_id, event_id, params)
-    @db.execute "UPDATE events SET date = ?, hour = ?, venue = ?, place = ?, address = ? WHERE account_id = ? and id = ?",
-      [params[:date], params[:hour], params[:venue], params[:place], params[:address], account_id, event_id]
+    @db.execute "UPDATE events SET date = ?, hour = ?, venue = ?, place = ?, city = ?, address = ? WHERE account_id = ? and id = ?",
+      [params[:date], params[:hour], params[:venue], params[:place], params[:city], params[:address], account_id, event_id]
 
     Result.success
   end
@@ -130,7 +131,7 @@ end
 DB.execute "INSERT INTO accounts (name) VALUES (?)", "Czarny motyl"
 DB.execute "INSERT INTO accounts (name) VALUES (?)", "Iglika"
 DB.execute "INSERT INTO accounts (name) VALUES (?)", "Etnorozrabiaka"
-EventRepo.new(DB).create(3, { date: "28.03.2025", hour: "19:00", venue: "Festiwal rozrabiaków", place: "Bar rozrabiaków", address: "Rozrabiacka 23, Rozrabiaków" })
+EventRepo.new(DB).create(3, { date: "28.03.2025", hour: "19:00", venue: "Festiwal rozrabiaków", place: "Bar rozrabiaków", city: "Rozrabiaków", address: "Rozrabiacka 23" })
 
 module Web
   class Events < Sinatra::Base
