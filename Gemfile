@@ -8,10 +8,11 @@ gem "param_param", "~> 1.0.0"
 gem "puma"
 gem "rackup"
 gem "rake"
+gem "resonad"
 gem "sqlite3"
 gem "sinatra", ">= 4.1.1"
-gem "jekyll", "~> 4.4.1"
 
+gem "jekyll", "~> 4.4.1"
 group :jekyll_plugins do
   gem "jekyll-feed"
   gem "jekyll-seo-tag"

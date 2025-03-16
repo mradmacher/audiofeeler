@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-require 'entitainer'
+require "entitainer"
+require "resonad"
+
+Result = Resonad
 
 module Audiofeeler
   class Account
