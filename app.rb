@@ -7,105 +7,7 @@ require "audiofeeler"
 
 require "sqlite3"
 
-DB = SQLite3::Database.new ":memory:"
-
-
-DB.execute <<SQL
-  CREATE TABLE accounts (
-    id INTEGER PRIMARY KEY,
-    name TEXT,
-    dir TEXT
-  );
-SQL
-
-DB.execute <<SQL
-  CREATE TABLE deploys (
-    id INTEGER PRIMARY KEY,
-    account_id INTEGER,
-    server TEXT,
-    username TEXT,
-    username_iv TEXT,
-    password TEXT,
-    password_iv TEXT,
-    dir TEXT,
-    FOREIGN KEY(account_id) REFERENCES accounts(id)
-  );
-SQL
-
-DB.execute <<SQL
-  CREATE TABLE events (
-    id INTEGER PRIMARY KEY,
-    account_id INTEGER,
-    date TEXT,
-    hour TEXT,
-    venue TEXT,
-    place TEXT,
-    city TEXT,
-    address TEXT,
-    FOREIGN KEY(account_id) REFERENCES accounts(id)
-  );
-SQL
-
-class AccountRepo
-  def initialize(db)
-    @db = db
-  end
-
-  def find_all
-    result = @db.execute "SELECT id, name FROM accounts"
-
-    Result.success(
-      result.map { |r| Audiofeeler::Account.new(id: r[0], name: r[1]) }
-    )
-  end
-
-  def find_one(id)
-    result = @db.execute "SELECT id, name FROM accounts WHERE id = ?", id
-    return Result.failure(:not_found) if result.empty?
-
-    Result.success(Audiofeeler::Account.new(id: result.first[0], name: result.first[1]))
-  end
-end
-
-class EventRepo
-  def initialize(db)
-    @db = db
-  end
-
-  def find_all(account_id)
-    result = @db.execute "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ?", account_id
-
-    events = result.map do |r|
-      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], city: r[5], address: r[6])
-    end
-
-    Result.success(events)
-  end
-
-  def find_one(account_id, event_id)
-    result = @db.execute "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ? and id = ?", [account_id, event_id]
-    return Result.failure(:not_found) if result.empty?
-
-    r = result.first
-    Result.success(
-      Audiofeeler::Event.new(id: r[0], date: r[1], hour: r[2], venue: r[3], place: r[4], city: r[5], address: r[6])
-    )
-  end
-
-  def create(account_id, params)
-    @db.execute "INSERT INTO events (account_id, date, hour, venue, place, city, address) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [account_id, params[:date], params[:hour], params[:venue], params[:place], params[:city], params[:address]]
-
-    Result.success
-  end
-
-  def update(account_id, event_id, params)
-    @db.execute "UPDATE events SET date = ?, hour = ?, venue = ?, place = ?, city = ?, address = ? WHERE account_id = ? and id = ?",
-      [params[:date], params[:hour], params[:venue], params[:place], params[:city], params[:address], account_id, event_id]
-
-    Result.success
-  end
-end
+DB = SQLite3::Database.new "./data/development.db"
 
 def select_layout(request, layouts)
   if request.env["HTTP_HX_REQUEST"]
@@ -128,19 +30,21 @@ def handle_result(result)
   end
 end
 
-DB.execute "INSERT INTO accounts (name) VALUES (?)", "Czarny motyl"
-DB.execute "INSERT INTO accounts (name) VALUES (?)", "Iglika"
-DB.execute "INSERT INTO accounts (name) VALUES (?)", "Etnorozrabiaka"
-EventRepo.new(DB).create(3, { date: "28.03.2025", hour: "19:00", venue: "Festiwal rozrabiaków", place: "Bar rozrabiaków", city: "Rozrabiaków", address: "Rozrabiacka 23" })
+# AccountRepo.new(DB).tap do |r|
+#   r.create(name: "Czarny motyl")
+#   r.create(name: "Iglika")
+#   r.create(name: "Etnorozrabiaka")
+# end
+# EventRepo.new(DB).create(3, { date: "28.03.2025", hour: "19:00", venue: "Festiwal rozrabiaków", place: "Bar rozrabiaków", city: "Rozrabiaków", address: "Rozrabiacka 23" })
 
 module Web
   class Events < Sinatra::Base
     get "/accounts/:account_id/events" do
-      result = AccountRepo.new(DB).find_one(params[:account_id])
+      result = Audiofeeler::AccountRepo.new(DB).find_one(params[:account_id])
         .on_success {
           @account = it
         }.and_then {
-          EventRepo.new(DB).find_all(@account.id)
+          Audiofeeler::EventRepo.new(DB).find_all(@account.id)
         }
 
       handle_result(result) do |events|
@@ -150,7 +54,7 @@ module Web
     end
 
     get "/accounts/:account_id/events/new" do
-      result = AccountRepo.new(DB).find_one(params[:account_id])
+      result = Audiofeeler::AccountRepo.new(DB).find_one(params[:account_id])
         .on_success {
           @account = it
         }
@@ -162,9 +66,9 @@ module Web
     end
 
     get "/accounts/:account_id/events/:id/edit" do
-      result = AccountRepo.new(DB).find_one(params[:account_id])
+      result = Audiofeeler::AccountRepo.new(DB).find_one(params[:account_id])
         .on_success { @account = it }
-        .and_then { EventRepo.new(DB).find_one(@account.id, params[:id]) }
+        .and_then { Audiofeeler::EventRepo.new(DB).find_one(@account.id, params[:id]) }
 
       handle_result(result) do |event|
         @event = event
@@ -173,9 +77,9 @@ module Web
     end
 
     post "/accounts/:account_id/events" do
-      result = AccountRepo.new(DB).find_one(params[:account_id])
+      result = Audiofeeler::AccountRepo.new(DB).find_one(params[:account_id])
         .on_success { @account = it }
-        .and_then { EventRepo.new(DB).create(@account.id, params[:event]) }
+        .and_then { Audiofeeler::EventRepo.new(DB).create(@account.id, params[:event]) }
 
       handle_result(result) do
         redirect "/accounts/#{@account.id}/events", 303
@@ -183,9 +87,9 @@ module Web
     end
 
     put "/accounts/:account_id/events/:id" do
-      result = AccountRepo.new(DB).find_one(params[:account_id])
+      result = Audiofeeler::AccountRepo.new(DB).find_one(params[:account_id])
         .on_success { @account = it }
-        .and_then { EventRepo.new(DB).update(@account.id, params[:id], params[:event]) }
+        .and_then { Audiofeeler::EventRepo.new(DB).update(@account.id, params[:id], params[:event]) }
 
 
       handle_result(result) do
@@ -207,7 +111,7 @@ class AudiofeelerWeb < Sinatra::Base
   end
 
   get "/accounts" do
-    result = AccountRepo.new(DB).find_all
+    result = Audiofeeler::AccountRepo.new(DB).find_all
 
     handle_result(result) do |accounts|
       @accounts = accounts
@@ -216,7 +120,7 @@ class AudiofeelerWeb < Sinatra::Base
   end
 
   get "/accounts/:id" do
-    result = AccountRepo.new(DB).find_one(params[:id])
+    result = Audiofeeler::AccountRepo.new(DB).find_one(params[:id])
     handle_result(result) do |account|
       @account = account
       erb :account_layout, layout: true do
