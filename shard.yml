@@ -1,0 +1,16 @@
+name: audiofeeler
+version: 0.1.0
+
+authors:
+  - mradmacher <michal@radmacher.pl>
+
+description: |
+  A simple app for managing musicians web pages
+
+dependencies:
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+  kemal:
+    github: kemalcr/kemal
+
+license: MIT
