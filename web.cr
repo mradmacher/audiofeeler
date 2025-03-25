@@ -3,13 +3,25 @@ require "./src/audiofeeler"
 
 db = DB.open "sqlite3://./data/development.db"
 
-aRepo = Audiofeeler::AccountRepo.new(db)
-eRepo = Audiofeeler::EventRepo.new(db)
+aRepo = Audiofeeler::AccountInventory.new(db)
+eRepo = Audiofeeler::EventInventory.new(db)
 
-aRepo.find_all.each do |account|
-  puts "#{account.name} (#{account.id})"
+result = aRepo.find_all
+case result
+in Ok
+  result.unwrap.each do |account|
+    puts "#{account.name} (#{account.id})"
+  end
+in Err
+  puts result.value
 end
-account = aRepo.find_one(3)
-if account
-  puts eRepo.find_all(account.id)
+
+[3, 30].each do |id|
+  result = aRepo.find_one(id)
+  case result
+  in Ok
+    puts eRepo.find_all(result.unwrap.id).unwrap
+  in Err
+    puts result.value
+  end
 end
