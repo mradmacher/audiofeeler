@@ -34,7 +34,7 @@ module Audiofeeler
     def create(params)
       er = @db.exec "INSERT INTO accounts (name) VALUES (?)", params[:name]
       Ok.created(er.last_insert_id)
-    rescue ex
+    rescue ex: DB::Error
       Err.fail(ex)
     end
 
@@ -46,7 +46,7 @@ module Audiofeeler
         accounts << Account.new(id: rs.read(Int64), name: rs.read(String?))
       end
       Ok.done(accounts)
-    rescue ex
+    rescue ex: DB::Error
       Err.fail(ex)
     end
 
@@ -56,7 +56,7 @@ module Audiofeeler
       end
     rescue ex: DB::NoResultsError
       Err.not_found(ex)
-    rescue ex
+    rescue ex: DB::Error
       Err.fail(ex)
     end
   end
