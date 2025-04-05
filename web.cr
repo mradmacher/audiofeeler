@@ -41,8 +41,7 @@ accounts_inventory = Audiofeeler::AccountInventory.new(db)
 events_inventory = Audiofeeler::EventInventory.new(db)
 
 get "/" do |env|
-  env.response.status_code = 303
-  env.redirect "/accounts"
+  env.redirect "/accounts", 303
 end
 
 get "/accounts" do |env|
@@ -93,7 +92,6 @@ post "/accounts/:id/events" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.create(account.id, env.params.body)
     handle_result(result, env) do
-      env.response.status_code = 303
       env.redirect "/accounts/#{account.id}/events", 303
     end
   end
@@ -104,7 +102,16 @@ put "/accounts/:id/events/:eid" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.update(account.id, env.params.url["eid"], env.params.body)
     handle_result(result, env) do
-      env.response.status_code = 303
+      env.redirect "/accounts/#{account.id}/events", 303
+    end
+  end
+end
+
+delete "/accounts/:id/events/:eid" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = events_inventory.delete(account.id, env.params.url["eid"])
+    handle_result(result, env) do
       env.redirect "/accounts/#{account.id}/events", 303
     end
   end

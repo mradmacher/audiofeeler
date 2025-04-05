@@ -23,7 +23,10 @@
           <td><%= event.place %></td>
           <td><%= event.city %></td>
           <td><%= event.address %></td>
-          <td><button hx-get="/accounts/<%= account.id %>/events/<%= event.id %>/edit" hx-target="#event-form">Edit</button></td>
+          <td>
+            <button hx-get="/accounts/<%= account.id %>/events/<%= event.id %>/edit" hx-target="#event-form">Edit</button>
+            <button class="contrast" hx-delete="/accounts/<%= account.id %>/events/<%= event.id %>" hx-target="#content-slot">Delete</button>
+          </td>
         </tr>
       <% end %>
       </tbody>

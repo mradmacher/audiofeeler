@@ -64,6 +64,14 @@ module Audiofeeler
     rescue ex: DB::Error
       Err.fail(ex)
     end
+
+    def delete(account_id, event_id)
+      result = @db.exec "DELETE FROM events WHERE account_id = ? and id = ?", account_id, event_id
+
+      Ok.destroyed(event_id)
+    rescue ex: DB::Error
+      Err.fail(ex)
+    end
   end
 end
 
