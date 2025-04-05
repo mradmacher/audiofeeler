@@ -27,11 +27,11 @@ def handle_render(filename, xhr)
   end
 end
 
-macro render_xhr(filename)
+macro render_no_layout(filename)
   render "views/#{ {{filename}} }.ecr"
 end
 
-macro render_no_xhr(filename)
+macro render_with_layout(filename)
   render "views/#{ {{filename}} }.ecr", "views/layout.ecr"
 end
 
@@ -49,14 +49,14 @@ get "/accounts" do |env|
   result = accounts_inventory.find_all
   handle_result(result, env) do |accounts|
     account = nil
-    render_no_xhr "accounts"
+    render_with_layout "accounts"
   end
 end
 
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    render_no_xhr "account"
+    render_with_layout "account"
   end
 end
 
@@ -65,7 +65,7 @@ get "/accounts/:id/events" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.find_all(account.id)
     handle_result(result, env) do |events|
-      is_xhr(env) ? render_xhr("events") : render_no_xhr("events")
+      is_xhr(env) ? render_no_layout("events") : render_with_layout("events")
     end
   end
 end
@@ -74,7 +74,7 @@ get "/accounts/:id/events/new" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
     event = Audiofeeler::Event.new
-    render_xhr("event_form")
+    render_no_layout("event_form")
   end
 end
 
@@ -83,7 +83,7 @@ get "/accounts/:id/events/:eid/edit" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.find_one(account.id, env.params.url["eid"])
     handle_result(result, env) do |event|
-      render_xhr("event_form")
+      render_no_layout("event_form")
     end
   end
 end
@@ -113,21 +113,21 @@ end
 get "/accounts/:id/pages" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_xhr("pages") : render_no_xhr("pages")
+    is_xhr(env) ? render_no_layout("pages") : render_with_layout("pages")
   end
 end
 
 get "/accounts/:id/videos" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_xhr("videos") : render_no_xhr("videos")
+    is_xhr(env) ? render_no_layout("videos") : render_with_layout("videos")
   end
 end
 
 get "/accounts/:id/lyrics" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_xhr("lyrics") : render_no_xhr("lyrics")
+    is_xhr(env) ? render_no_layout("lyrics") : render_with_layout("lyrics")
   end
 end
 
