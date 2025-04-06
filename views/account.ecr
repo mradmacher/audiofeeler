@@ -1,0 +1,14 @@
+<button hx-get="/accounts/<%= account.id %>/deploys/new" hx-target="#deploy-form">Add deploy</button>
+<!--
+<article>
+  <header><h2>example.com</h2></header>
+  <dl>
+    <dt>Last deployed:</dt>
+    <dd>Never</dd>
+  </dl>
+  <footer>
+    <button>Deploy</button>
+  </footer>
+</article>
+-->
+<dialog id="deploy-form" hx-on:htmx-after-swap="this.showModal()"></dialog>

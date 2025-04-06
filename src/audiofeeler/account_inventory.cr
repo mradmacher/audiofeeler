@@ -7,7 +7,7 @@ module Audiofeeler
     end
 
     def create(params)
-      er = @db.exec "INSERT INTO accounts (name) VALUES (?)", params[:name]
+      er = @db.exec "INSERT INTO accounts (name) VALUES (?)", params["name"]
       Ok.created(er.last_insert_id)
     rescue ex: DB::Error
       Err.fail(ex)
