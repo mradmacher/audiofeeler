@@ -55,7 +55,7 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    render_with_layout "account"
+    is_xhr(env) ? render_no_layout("account") : render_with_layout("account")
   end
 end
 
@@ -114,6 +114,14 @@ delete "/accounts/:id/events/:eid" do |env|
     handle_result(result, env) do
       env.redirect "/accounts/#{account.id}/events", 303
     end
+  end
+end
+
+get "/accounts/:id/deploys/new" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    deploy = Audiofeeler::Deploy.new
+    render_no_layout("deploy_form")
   end
 end
 
