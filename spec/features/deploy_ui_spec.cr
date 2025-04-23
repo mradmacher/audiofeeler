@@ -1,6 +1,6 @@
 require "./../browser_spec_helper"
 
-describe "selenium" do
+describe "selenium", tags: "browser" do
   it "works" do
     with_session do |session|
       session.navigate_to("http://localhost:3000/accounts")

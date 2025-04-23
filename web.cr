@@ -43,6 +43,7 @@ db = DB.open "sqlite3://./data/development.db"
 
 accounts_inventory = Audiofeeler::AccountInventory.new(db)
 events_inventory = Audiofeeler::EventInventory.new(db)
+deploy_inventory = Audiofeeler::DeployInventory.new(db, Audiofeeler::DeployInventory.random_encryption_key)
 
 get "/" do |env|
   env.redirect "/accounts", 303
@@ -59,7 +60,10 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    render_htmx(is_xhr(env), "account")
+    result2 = deploy_inventory.find_all(account.id)
+    handle_result(result2, env) do |deploys|
+      render_htmx(is_xhr(env), "account")
+    end
   end
 end
 
@@ -126,6 +130,16 @@ get "/accounts/:id/deploys/new" do |env|
   handle_result(result, env) do |account|
     deploy = Audiofeeler::Deploy.new
     render_no_layout("deploy_form")
+  end
+end
+
+post "/accounts/:id/deploys" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deploy_inventory.create(account.id, env.params.body)
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}", 303
+    end
   end
 end
 

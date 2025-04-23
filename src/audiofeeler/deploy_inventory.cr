@@ -4,8 +4,10 @@ require "random/secure"
 
 module Audiofeeler
   class DeployInventory
-    def initialize(@db : DB::Database)
-      @db = db
+    CIPHER_NAME = "aes-256-cbc"
+
+    def initialize(@db : DB::Database, encryption_key : String)
+      @encryption_key = Base64.decode(encryption_key)
     end
 
     def find_one(id)
@@ -48,20 +50,19 @@ module Audiofeeler
     end
 
     def create(account_id, params)
-      key = Random::Secure.random_bytes(64)
       username = params["username"]?
       password = params["password"]?
-      username_iv = username ? Random::Secure.random_bytes(32) : nil
-      password_iv = password ? Random::Secure.random_bytes(32) : nil
+      username_iv = username ? random_iv : nil
+      password_iv = password ? random_iv : nil
 
       result = @db.exec "INSERT INTO deploys (account_id, server, local_dir, remote_dir, username, username_iv, password, password_iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         account_id,
         params["server"]?,
         params["local_dir"]?,
         params["remote_dir"]?,
-        encrypt(username, key, username_iv),
+        encrypt(username, @encryption_key, username_iv),
         username_iv,
-        encrypt(password, key, password_iv),
+        encrypt(password, @encryption_key, password_iv),
         password_iv
 
       Ok.created(result.last_insert_id)
@@ -69,13 +70,21 @@ module Audiofeeler
       Err.fail(ex)
     end
 
+    def self.random_encryption_key
+      Random::Secure.base64(64)
+    end
+
+    private def random_iv
+      Random::Secure.random_bytes(32)
+    end
+
     private def encrypt(data, key, iv)
       return nil if data.nil?
 
-      cipher = OpenSSL::Cipher.new("aes-256-cbc")
+      cipher = OpenSSL::Cipher.new(CIPHER_NAME)
       cipher.encrypt
       cipher.key = key
-      cipher.random_iv
+      cipher.iv = iv.not_nil!
 
       io = IO::Memory.new
       io.write(cipher.update(data))

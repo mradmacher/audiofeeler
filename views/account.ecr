@@ -1,3 +1,8 @@
+<ul>
+  <% deploys.each do |deploy| %>
+    <li><%= deploy.server %> [<%= deploy.local_dir %> -> <%= deploy.remote_dir %>]</li>
+  <% end %>
+</ul>
 <button hx-get="/accounts/<%= account.id %>/deploys/new" hx-target="#deploy-form">Add deploy</button>
 <!--
 <article>
