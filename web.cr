@@ -35,6 +35,10 @@ macro render_with_layout(filename)
   render "views/#{ {{filename}} }.ecr", "views/layout.ecr"
 end
 
+macro render_htmx(xhr, filename)
+  {{xhr}} ? render_no_layout({{filename}}) : render_with_layout({{filename}})
+end
+
 db = DB.open "sqlite3://./data/development.db"
 
 accounts_inventory = Audiofeeler::AccountInventory.new(db)
@@ -55,7 +59,7 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("account") : render_with_layout("account")
+    render_htmx(is_xhr(env), "account")
   end
 end
 
@@ -64,7 +68,7 @@ get "/accounts/:id/events" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.find_all(account.id)
     handle_result(result, env) do |events|
-      is_xhr(env) ? render_no_layout("events") : render_with_layout("events")
+      render_htmx(is_xhr(env), "events")
     end
   end
 end
@@ -128,14 +132,14 @@ end
 get "/accounts/:id/pages" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("pages") : render_with_layout("pages")
+    render_htmx(is_xhr(env), "pages")
   end
 end
 
 get "/accounts/:id/videos" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("videos") : render_with_layout("videos")
+    render_htmx(is_xhr(env), "videos")
   end
 end
 
