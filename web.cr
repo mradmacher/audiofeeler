@@ -60,10 +60,7 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result2 = deploy_inventory.find_all(account.id)
-    handle_result(result2, env) do |deploys|
-      render_htmx(is_xhr(env), "account")
-    end
+    render_htmx(is_xhr(env), "account")
   end
 end
 
@@ -133,12 +130,53 @@ get "/accounts/:id/deploys/new" do |env|
   end
 end
 
+get "/accounts/:id/deploys/:did/edit_paths" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deploy_inventory.find_one(account.id, env.params.url["did"])
+    handle_result(result, env) do |deploy|
+      render_no_layout("deploy_paths_form")
+    end
+  end
+end
+
 post "/accounts/:id/deploys" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
     result = deploy_inventory.create(account.id, env.params.body)
     handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}", 303
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+put "/accounts/:id/deploys/:did" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deploy_inventory.update(account.id, env.params.url["did"], env.params.body)
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+delete "/accounts/:id/deploys/:did" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deploy_inventory.delete(account.id, env.params.url["did"])
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+
+get "/accounts/:id/config" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result2 = deploy_inventory.find_all(account.id)
+    handle_result(result2, env) do |deploys|
+      render_htmx(is_xhr(env), "config")
     end
   end
 end
@@ -154,13 +192,6 @@ get "/accounts/:id/videos" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
     render_htmx(is_xhr(env), "videos")
-  end
-end
-
-get "/accounts/:id/lyrics" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("lyrics") : render_with_layout("lyrics")
   end
 end
 

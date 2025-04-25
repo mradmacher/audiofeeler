@@ -10,8 +10,8 @@ module Audiofeeler
       @encryption_key = Base64.decode(encryption_key)
     end
 
-    def find_one(id)
-      @db.query_one "SELECT id, account_id, server, local_dir, remote_dir, username, password FROM deploys WHERE id = ?", id do |rs|
+    def find_one(account_id, id)
+      @db.query_one "SELECT id, account_id, server, local_dir, remote_dir, username, password FROM deploys WHERE account_id = ? and id = ?", account_id, id do |rs|
         return Ok.done(
           Deploy.new(
             id: rs.read(Int64),
@@ -32,7 +32,7 @@ module Audiofeeler
 
     def find_all(account_id)
       deploys = Array(Deploy).new
-      @db.query "SELECT id, account_id, server, local_dir, remote_dir FROM deploys WHERE account_id = ?", account_id do |rs|
+      @db.query "SELECT id, account_id, server, local_dir, remote_dir, username, password FROM deploys WHERE account_id = ?", account_id do |rs|
         rs.each do
           deploys << Deploy.new(
             id: rs.read(Int64),
@@ -40,11 +40,21 @@ module Audiofeeler
             server: rs.read(String?),
             local_dir: rs.read(String?),
             remote_dir: rs.read(String?),
+            username: rs.read(String?),
+            password: rs.read(String?),
           )
         end
       end
 
       Ok.done(deploys)
+    rescue ex: DB::Error
+      Err.fail(ex)
+    end
+
+    def update(account_id, id, params)
+      result = @db.exec "UPDATE deploys SET server = ?, local_dir = ?, remote_dir = ? WHERE account_id = ? and id = ?", params["server"], params["local_dir"], params["remote_dir"], account_id, id
+
+      Ok.updated(id)
     rescue ex: DB::Error
       Err.fail(ex)
     end
@@ -66,6 +76,14 @@ module Audiofeeler
         password_iv
 
       Ok.created(result.last_insert_id)
+    rescue ex: DB::Error
+      Err.fail(ex)
+    end
+
+    def delete(account_id, id)
+      result = @db.exec "DELETE FROM deploys WHERE account_id = ? and id = ?", account_id, id
+
+      Ok.destroyed(id)
     rescue ex: DB::Error
       Err.fail(ex)
     end
