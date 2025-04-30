@@ -18,13 +18,15 @@
         <dd><%= deploy.password ? "*****" : "-" %></dd>
       </dl>
       <footer>
-        <button hx-get="/accounts/<%= account.id %>/deploys/<%= deploy.id %>/edit_paths" hx-target="#deploy-form">Edit paths</button>
-        <button>Edit credentials</button>
+        <button hx-get="/accounts/<%= account.id %>/deploys/<%= deploy.id %>/edit?view=paths" hx-target="#deploy-form">Edit paths</button>
+        <button hx-get="/accounts/<%= account.id %>/deploys/<%= deploy.id %>/edit?view=credentials" hx-target="#deploy-form">Edit credentials</button>
         <button class="secondary" hx-delete="/accounts/<%= account.id %>/deploys/<%= deploy.id %>" hx-target="#content-slot">Delete</button>
       </footer>
     </article>
   <% end %>
-  <button hx-get="/accounts/<%= account.id %>/deploys/new" hx-target="#deploy-form">Add deploy</button>
+  <% if deploys.size == 0 %>
+    <button hx-get="/accounts/<%= account.id %>/deploys/new" hx-target="#deploy-form">Add deploy</button>
+  <% end %>
 
   <dialog id="deploy-form" hx-on:htmx-after-swap="this.showModal()"></dialog>
 </section>

@@ -52,7 +52,40 @@ module Audiofeeler
     end
 
     def update(account_id, id, params)
-      result = @db.exec "UPDATE deploys SET server = ?, local_dir = ?, remote_dir = ? WHERE account_id = ? and id = ?", params["server"], params["local_dir"], params["remote_dir"], account_id, id
+      result = if params.has_key?("server") || params.has_key?("local_dir") || params.has_key?("remote_dir")
+        update_paths(account_id, id, params)
+      end
+      return result.not_nil! if result && result.err?
+
+      result = if params.has_key?("username") || params.has_key?("password")
+        update_credentials(account_id, id, params)
+      end
+      return result.not_nil! if result && result.err?
+
+      Ok.updated(id)
+    end
+
+    private def update_paths(account_id, id, params)
+      @db.exec "UPDATE deploys SET server = ?, local_dir = ?, remote_dir = ? WHERE account_id = ? AND id = ?", params["server"], params["local_dir"], params["remote_dir"], account_id, id
+
+      Ok.updated(id)
+    rescue ex: DB::Error
+      Err.fail(ex)
+    end
+
+    private def update_credentials(account_id, id, params)
+      username = params["username"]
+      password = params["password"]
+      username_iv = random_iv
+      password_iv = random_iv
+
+      @db.exec "UPDATE deploys SET username = ?, username_iv = ?, password = ?, password_iv = ? WHERE account_id = ? AND id = ?",
+        encrypt(username, @encryption_key, username_iv),
+        username_iv,
+        encrypt(password, @encryption_key, password_iv),
+        password_iv,
+        account_id,
+        id
 
       Ok.updated(id)
     rescue ex: DB::Error
