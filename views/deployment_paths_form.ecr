@@ -1,0 +1,22 @@
+<article>
+  <form method="post">
+    <fieldset>
+      <legend>Server and paths</legend>
+      <label>
+        Server
+        <input name="server" value="<%= deployment.server %>"/>
+      </label>
+      <label>
+        Remote Directory
+        <input name="remote_dir" value="<%= deployment.remote_dir %>"/>
+      </label>
+    </fieldset>
+    <% if deployment.id %>
+      <button hx-put="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Save</button>
+    <% else %>
+      <button hx-post="/accounts/<%= account.id %>/deployments" hx-target="#content-slot">Create</button>
+    <% end %>
+    <button hx-get="/accounts/<%= account.id %>/config" hx-target="#content-slot">Cancel</button>
+  </form>
+</article>
+

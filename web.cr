@@ -43,7 +43,7 @@ db = DB.open "sqlite3://./data/development.db"
 
 accounts_inventory = Audiofeeler::AccountInventory.new(db)
 events_inventory = Audiofeeler::EventInventory.new(db)
-deploy_inventory = Audiofeeler::DeployInventory.new(db, Audiofeeler::DeployInventory.random_encryption_key)
+deployment_inventory = Audiofeeler::DeploymentInventory.new(db, Audiofeeler::DeploymentInventory.random_encryption_key)
 
 get "/" do |env|
   env.redirect "/accounts", 303
@@ -60,7 +60,7 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    deploys = deploy_inventory.find_all(account.id).unwrap
+    deployments = deployment_inventory.find_all(account.id).unwrap
     render_htmx(is_xhr(env), "account")
   end
 end
@@ -123,55 +123,55 @@ delete "/accounts/:id/events/:eid" do |env|
   end
 end
 
-get "/accounts/:id/deploys/new" do |env|
+get "/accounts/:id/deployments/new" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    deploy = Audiofeeler::Deploy.new
-    render_no_layout("deploy_form")
+    deployment = Audiofeeler::Deployment.new
+    render_no_layout("deployment_form")
   end
 end
 
-get "/accounts/:id/deploys/:deploy_id/edit" do |env|
+get "/accounts/:id/deployments/:deployment_id/edit" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deploy_inventory.find_one(account.id, env.params.url["deploy_id"])
-    handle_result(result, env) do |deploy|
+    result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
+    handle_result(result, env) do |deployment|
       if env.params.query["view"] == "credentials"
-        render_no_layout("deploy_credentials_form")
+        render_no_layout("deployment_credentials_form")
       else
-        render_no_layout("deploy_paths_form")
+        render_no_layout("deployment_paths_form")
       end
     end
   end
 end
 
-post "/accounts/:id/deploys" do |env|
+post "/accounts/:id/deployments" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deploy_inventory.create(account.id, env.params.body)
+    result = deployment_inventory.create(account.id, env.params.body)
     handle_result(result, env) do
       env.redirect "/accounts/#{account.id}/config", 303
     end
   end
 end
 
-put "/accounts/:id/deploys/:deploy_id" do |env|
+put "/accounts/:id/deployments/:deployment_id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deploy_inventory.update(account.id, env.params.url["deploy_id"], env.params.body)
+    result = deployment_inventory.update(account.id, env.params.url["deployment_id"], env.params.body)
     handle_result(result, env) do
       env.redirect "/accounts/#{account.id}/config", 303
     end
   end
 end
 
-post "/accounts/:id/deploys/:deploy_id" do |env|
+post "/accounts/:id/deployments/:deployment_id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deploy_inventory.find_one(account.id, env.params.url["deploy_id"])
+    result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
     handle_result(result, env) do |deploy|
       stdout = IO::Memory.new
-      process = Process.new("bundle", ["exec", "jekyll", "build", "-s", "data/accounts/#{deploy.local_dir}/", "-d", "data/accounts/#{deploy.local_dir}/_site/"], output: stdout)
+      process = Process.new("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
       status = process.wait
       output = stdout.to_s
       render_no_layout("deploy_result")
@@ -179,10 +179,10 @@ post "/accounts/:id/deploys/:deploy_id" do |env|
   end
 end
 
-delete "/accounts/:id/deploys/:deploy_id" do |env|
+delete "/accounts/:id/deployments/:deployment_id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deploy_inventory.delete(account.id, env.params.url["deploy_id"])
+    result = deployment_inventory.delete(account.id, env.params.url["deployment_id"])
     handle_result(result, env) do
       env.redirect "/accounts/#{account.id}/config", 303
     end
@@ -193,8 +193,8 @@ end
 get "/accounts/:id/config" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result2 = deploy_inventory.find_all(account.id)
-    handle_result(result2, env) do |deploys|
+    result2 = deployment_inventory.find_all(account.id)
+    handle_result(result2, env) do |deployments|
       render_htmx(is_xhr(env), "config")
     end
   end

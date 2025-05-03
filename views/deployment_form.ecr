@@ -1,0 +1,33 @@
+<article>
+  <form method="post">
+    <fieldset>
+      <legend><h3>Deployment details</h3></legend>
+      <fieldset>
+        <label>
+          Server
+          <input name="server" value="<%= deployment.server %>"/>
+        </label>
+        <label>
+          Remote Directory
+          <input name="remote_dir" value="<%= deployment.remote_dir %>"/>
+        </label>
+      </fieldset>
+      <fieldset class="grid">
+        <label>
+          Username
+          <input name="username" value="<%= deployment.username %>"/>
+        </label>
+        <label>
+          Password
+          <input name="password" value="<%= deployment.password %>"/>
+        </label>
+      </fieldset>
+    </fieldset>
+    <% if deployment.id %>
+      <button hx-put="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Save</button>
+    <% else %>
+      <button hx-post="/accounts/<%= account.id %>/deployments" hx-target="#content-slot">Create</button>
+    <% end %>
+    <button hx-get="/accounts/<%= account.id %>/config" hx-target="#content-slot">Cancel</button>
+  </form>
+</article>

@@ -1,32 +1,29 @@
 <h1>Configuration</h1>
 <section>
-  <h2>Deploys</h2>
-  <% deploys.each do |deploy| %>
+  <h2>Deployments</h2>
+  <% deployments.each do |deployment| %>
     <article>
-      <header><h3><%= deploy.server %></h3></header>
+      <header><h3><%= deployment.server %></h3></header>
       <dl>
-        <dt>Local</dt>
-        <dd><%= deploy.local_dir %></dd>
-
         <dt>Remote</dt>
-        <dd><%= deploy.remote_dir %></dd>
+        <dd><%= deployment.remote_dir %></dd>
 
         <dt>Username</dt>
-        <dd><%= deploy.username ? "*****" : "-" %></dd>
+        <dd><%= deployment.username ? "*****" : "-" %></dd>
 
         <dt>Password</dt>
-        <dd><%= deploy.password ? "*****" : "-" %></dd>
+        <dd><%= deployment.password ? "*****" : "-" %></dd>
       </dl>
       <footer>
-        <button hx-get="/accounts/<%= account.id %>/deploys/<%= deploy.id %>/edit?view=paths" hx-target="#deploy-form">Edit paths</button>
-        <button hx-get="/accounts/<%= account.id %>/deploys/<%= deploy.id %>/edit?view=credentials" hx-target="#deploy-form">Edit credentials</button>
-        <button class="secondary" hx-delete="/accounts/<%= account.id %>/deploys/<%= deploy.id %>" hx-target="#content-slot">Delete</button>
+        <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=paths" hx-target="#deployment-form">Edit paths</button>
+        <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=credentials" hx-target="#deployment-form">Edit credentials</button>
+        <button class="secondary" hx-delete="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Delete</button>
       </footer>
     </article>
   <% end %>
-  <% if deploys.size == 0 %>
-    <button hx-get="/accounts/<%= account.id %>/deploys/new" hx-target="#deploy-form">Add deploy</button>
+  <% if deployments.size == 0 %>
+    <button hx-get="/accounts/<%= account.id %>/deployments/new" hx-target="#deployment-form">Add deployment</button>
   <% end %>
 
-  <dialog id="deploy-form" hx-on:htmx-after-swap="this.showModal()"></dialog>
+  <dialog id="deployment-form" hx-on:htmx-after-swap="this.showModal()"></dialog>
 </section>

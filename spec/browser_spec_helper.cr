@@ -19,8 +19,7 @@ class MyWebdriver
     @driver = Selenium::Driver.for(:chrome, service: service)
 
     @capabilities = Selenium::Chrome::Capabilities.new
-    @capabilities.chrome_options.args = ["no-sandbox", "headless", "disable-gpu", "user-data-dir=#{__DIR__}../data/selenium"]
-
+    @capabilities.chrome_options.args = ["no-sandbox", "headless", "disable-gpu", "user-data-dir=#{__DIR__}/../data/selenium"]
   end
 
   def create_session

@@ -2,9 +2,9 @@
   <dt>Status</dt>
   <dd><%= status.to_s %></dd>
 
-  <dt>Reason</dt>
+  <dt>Result</dt>
   <dd><%= status.exit_reason %></dd>
 
   <dt>Output</dt>
-  <dd><%= output %></dd>
+  <dd><%= output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %></dd>
 </dl>
