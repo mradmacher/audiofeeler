@@ -165,7 +165,7 @@ put "/accounts/:id/deployments/:deployment_id" do |env|
   end
 end
 
-post "/accounts/:id/deployments/:deployment_id" do |env|
+post "/accounts/:id/deployments/:deployment_id/release" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
     result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])

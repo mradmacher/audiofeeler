@@ -1,10 +1,10 @@
 <% deployments.each do |deployment| %>
   <article>
     <header><h2><%= deployment.server %></h2></header>
-    <p id="deploy-<%= deployment.id %>-result">
+    <p id="deployment-<%= deployment.id %>-result">
     </p>
     <footer>
-      <button hx-post="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#deploy-<%= deployment.id %>-result">Deploy</button>
+      <button hx-post="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/release" hx-target="#deployment-<%= deployment.id %>-result">Release</button>
     </footer>
   </article>
 <% end %>
