@@ -29,6 +29,25 @@ module Audiofeeler
       Err.fail(ex)
     end
 
+    def find_one_decrypted(account_id, id)
+      @db.query_one "SELECT id, account_id, server, remote_dir, username, username_iv, password, password_iv FROM deployments WHERE account_id = ? and id = ?", account_id, id do |rs|
+        Ok.done(
+          Deployment.new(
+            id: rs.read(Int64),
+            account_id: rs.read(Int64),
+            server: rs.read(String),
+            remote_dir: rs.read(String?),
+            username: decrypt(rs.read(String?), @encryption_key, rs.read(String?)),
+            password: decrypt(rs.read(String?), @encryption_key, rs.read(String?)),
+          )
+        )
+      end
+    rescue ex: DB::NoResultsError
+      Err.not_found(ex)
+    rescue ex: DB::Error
+      Err.fail(ex)
+    end
+
     def find_all(account_id)
       deploys = Array(Deployment).new
       @db.query "SELECT id, account_id, server, remote_dir, username, password FROM deployments WHERE account_id = ?", account_id do |rs|
@@ -123,7 +142,25 @@ module Audiofeeler
     end
 
     private def random_iv
-      Random::Secure.random_bytes(32)
+      Random::Secure.base64(32)
+    end
+
+    private def decrypt(encoded_data, key, iv)
+      return nil if encoded_data.nil?
+
+      data = Base64.decode(encoded_data)
+      cipher = OpenSSL::Cipher.new(CIPHER_NAME)
+      cipher.decrypt
+      cipher.key = key
+      cipher.iv = iv.not_nil!
+
+      io = IO::Memory.new
+      io.write(cipher.update(data))
+      io.write(cipher.final)
+      io.rewind
+
+
+      io.gets_to_end
     end
 
     private def encrypt(data, key, iv)

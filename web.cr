@@ -169,11 +169,15 @@ post "/accounts/:id/deployments/:deployment_id/release" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
     result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
-    handle_result(result, env) do |deploy|
+    handle_result(result, env) do |deployment|
       stdout = IO::Memory.new
-      process = Process.new("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
-      status = process.wait
-      output = stdout.to_s
+      build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
+      build_output = stdout.to_s
+
+      stdout = IO::Memory.new
+      build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
+      deployment_status = Process.run("npx", ["ftp-deploy", "--server", deployment.server, "--username", deployment.username, "--password", deployment.password, "--local-dir", "data/accounts/#{account.source_dir}/_site/", "--server-dir", deployment.remote_dir], output: stdout)
+      deployment_output = stdout.to_s
       render_no_layout("deploy_result")
     end
   end

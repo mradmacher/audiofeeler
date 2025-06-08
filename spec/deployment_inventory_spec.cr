@@ -8,6 +8,23 @@ describe "DeploymentInventory" do
     account_inventory.create({"name" => "Test", "source_dir" => "here"}).unwrap
   ).unwrap
 
+  describe "#find_one_decrypted" do
+    plain_username = "look at me"
+    plain_password = "you can see me"
+    result = deployment_inventory.create(account.id, {
+      "server" => "example.com",
+      "remote_dir" => "there",
+      "username" => plain_username,
+      "password" => plain_password,
+    })
+    result.ok?.should be_true
+
+    deploy = deployment_inventory.find_one_decrypted(account.id, result.unwrap).unwrap
+
+    deploy.username.should eq plain_username
+    deploy.password.should eq plain_password
+  end
+
   describe "#create" do
     it "creates new deploy" do
       result = deployment_inventory.create(account.id, {
