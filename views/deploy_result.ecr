@@ -1,19 +1,37 @@
-<dl>
-  <dt>Build Status</dt>
-  <dd><%= build_status.to_s %></dd>
+<article>
+  <header><h2>Release result</h2></header>
+  <h3>Build</h3>
+  <dl>
+    <dt>Status</dt>
+    <dd><%= build_status.to_s %></dd>
 
-  <dt>Build Result</dt>
-  <dd><%= build_status.exit_reason %></dd>
+    <dt>Result</dt>
+    <dd><%= build_status.exit_reason %></dd>
+    <dt>Output</dt>
+    <dd>
+      <details name="output">
+        <summary>Build</summary>
+        <%= build_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %>
+      </details>
+    </dd>
+  </dl>
 
-  <dt>Build Output</dt>
-  <dd><%= build_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %></dd>
+  <h3>Deployment</h3>
+  <dl>
+    <dt>Status</dt>
+    <dd><%= deployment_status.to_s %></dd>
 
-  <dt>Deployment Status</dt>
-  <dd><%= deployment_status.to_s %></dd>
+    <dt>Result</dt>
+    <dd><%= deployment_status.exit_reason %></dd>
 
-  <dt>Deployment Result</dt>
-  <dd><%= deployment_status.exit_reason %></dd>
-
-  <dt>Deployment Output</dt>
-  <dd><%= deployment_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %></dd>
-</dl>
+    <dt>Output</dt>
+    <dd>
+      <details name="output">
+        <summary>Deployment</summary>
+        <%= deployment_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %></dd>
+      </details>
+    </dd>
+  </dl>
+  <footer>
+  </footer>
+</article>

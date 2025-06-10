@@ -2,6 +2,7 @@ require "kemal"
 require "sqlite3"
 require "./src/audiofeeler"
 
+
 def handle_result(result, env)
   case result
   when Ok
@@ -39,11 +40,14 @@ macro render_htmx(xhr, filename)
   {{xhr}} ? render_no_layout({{filename}}) : render_with_layout({{filename}})
 end
 
+
+encryption_key = ENV["AUDIOFEELER_ENCRYPTION_KEY"]
+
 db = DB.open "sqlite3://./data/development.db"
 
 accounts_inventory = Audiofeeler::AccountInventory.new(db)
 events_inventory = Audiofeeler::EventInventory.new(db)
-deployment_inventory = Audiofeeler::DeploymentInventory.new(db, Audiofeeler::DeploymentInventory.random_encryption_key)
+deployment_inventory = Audiofeeler::DeploymentInventory.new(db, encryption_key)
 
 get "/" do |env|
   env.redirect "/accounts", 303
@@ -168,15 +172,14 @@ end
 post "/accounts/:id/deployments/:deployment_id/release" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
+    result = deployment_inventory.find_one_decrypted(account.id, env.params.url["deployment_id"])
     handle_result(result, env) do |deployment|
       stdout = IO::Memory.new
       build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
       build_output = stdout.to_s
 
       stdout = IO::Memory.new
-      build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
-      deployment_status = Process.run("npx", ["ftp-deploy", "--server", deployment.server, "--username", deployment.username, "--password", deployment.password, "--local-dir", "data/accounts/#{account.source_dir}/_site/", "--server-dir", deployment.remote_dir], output: stdout)
+      deployment_status = Process.run("npx", ["ftp-deploy", "--server", deployment.server.not_nil!, "--username", deployment.username.not_nil!, "--password", deployment.password.not_nil!, "--local-dir", "data/accounts/#{account.source_dir}/_site/", "--server-dir", deployment.remote_dir.not_nil!], output: stdout)
       deployment_output = stdout.to_s
       render_no_layout("deploy_result")
     end
