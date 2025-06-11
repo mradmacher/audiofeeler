@@ -1,0 +1,30 @@
+<article>
+  <header><h2>Release result</h2></header>
+  <table>
+    <thead>
+      <tr>
+        <th>Build Status</th>
+        <th>Build Result</th>
+        <th>Deployment Status</th>
+        <th>Deployment Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><%= build_status.to_s %></td>
+        <td><%= build_status.exit_reason %></td>
+        <td><%= deployment_status.to_s %></td>
+        <td><%= deployment_status.exit_reason %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <details name="output">
+    <summary>Build Output</summary>
+    <%= build_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %>
+  </details>
+  <details name="output">
+    <summary>Deployment Output</summary>
+    <%= deployment_output.gsub(" ") { "&nbsp;" }.gsub("\n") { "<br />" } %></dd>
+  </details>
+</article>

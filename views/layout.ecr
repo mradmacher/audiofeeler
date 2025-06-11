@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/css/main.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <title>Audiofeeler</title>
   </head>
@@ -20,7 +21,6 @@
         <hgroup>
           <h1><a href="/accounts/<%= account.id %>"><%= account.name %></a></h1>
         </hgroup>
-        <button>Deploy</button>
         <nav>
           <ul>
             <li>
@@ -38,17 +38,17 @@
               </a>
             </li>
             <li>
-              <a hx-get="/accounts/<%= account.id %>/lyrics"
-                 hx-push-url="true"
-                 hx-target="#content-slot">
-                 Lyrics
-              </a>
-            </li>
-            <li>
               <a hx-get="/accounts/<%= account.id %>/pages"
                  hx-push-url="true"
                  hx-target="#content-slot">
                  Pages
+              </a>
+            </li>
+            <li>
+              <a hx-get="/accounts/<%= account.id %>/config"
+                 hx-push-url="true"
+                 hx-target="#content-slot">
+                 Configuration
               </a>
             </li>
           </ul>

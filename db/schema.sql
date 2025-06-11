@@ -1,10 +1,14 @@
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS deployments;
+DROP TABLE IF EXISTS accounts;
+
 CREATE TABLE accounts (
   id INTEGER PRIMARY KEY,
   name TEXT,
-  dir TEXT
+  source_dir TEXT
 );
 
-CREATE TABLE deploys (
+CREATE TABLE deployments (
   id INTEGER PRIMARY KEY,
   account_id INTEGER,
   server TEXT,
@@ -12,7 +16,7 @@ CREATE TABLE deploys (
   username_iv TEXT,
   password TEXT,
   password_iv TEXT,
-  dir TEXT,
+  remote_dir TEXT,
   FOREIGN KEY(account_id) REFERENCES accounts(id)
 );
 

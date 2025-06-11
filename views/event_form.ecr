@@ -1,41 +1,41 @@
 <article>
-<form method="post">
-  <fieldset>
-    <legend><h3>Event details</h3></legend>
-    <fieldset class="grid">
-      <label>
-        Date
-        <input name="event[date]" value="<%= event.date %>"/>
-      </label>
-      <label>
-        Hour
-        <input name="event[hour]" value="<%= event.hour %>"/>
-      </label>
-    </fieldset>
+  <form method="post">
     <fieldset>
-      <label>
-        Venue
-        <input name="event[venue]" value="<%= event.venue %>"/>
-      </label>
-      <label>
-        Place
-        <input name="event[place]" value="<%= event.place %>"/>
-      </label>
-      <label>
-        City
-        <input name="event[city]" value="<%= event.city %>"/>
-      </label>
-      <label>
-        Address
-        <input name="event[address]" value="<%= event.address %>"/>
-      </label>
+      <legend><h3>Event details</h3></legend>
+      <fieldset class="grid">
+        <label>
+          Date
+          <input name="event[date]" value="<%= event.date %>"/>
+        </label>
+        <label>
+          Hour
+          <input name="event[hour]" value="<%= event.hour %>"/>
+        </label>
+      </fieldset>
+      <fieldset>
+        <label>
+          Venue
+          <input name="event[venue]" value="<%= event.venue %>"/>
+        </label>
+        <label>
+          Place
+          <input name="event[place]" value="<%= event.place %>"/>
+        </label>
+        <label>
+          City
+          <input name="event[city]" value="<%= event.city %>"/>
+        </label>
+        <label>
+          Address
+          <input name="event[address]" value="<%= event.address %>"/>
+        </label>
+      </fieldset>
     </fieldset>
-  </fieldset>
-  <% if event.id %>
-    <button hx-put="/accounts/<%= account.id %>/events/<%= event.id %>" hx-target="#content-slot">Save event</button>
-  <% else %>
-    <button hx-post="/accounts/<%= account.id %>/events" hx-target="#content-slot">Create event</button>
-  <% end %>
-  <button hx-get="/accounts/<%= account.id %>/events" hx-target="#content-slot">Cancel</button>
-</form>
+    <% if event.id %>
+      <button hx-put="/accounts/<%= account.id %>/events/<%= event.id %>" hx-target="#content-slot">Save event</button>
+    <% else %>
+      <button hx-post="/accounts/<%= account.id %>/events" hx-target="#content-slot">Create event</button>
+    <% end %>
+    <button hx-get="/accounts/<%= account.id %>/events" hx-target="#content-slot">Cancel</button>
+  </form>
 </article>

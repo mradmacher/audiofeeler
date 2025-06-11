@@ -2,6 +2,7 @@ require "kemal"
 require "sqlite3"
 require "./src/audiofeeler"
 
+
 def handle_result(result, env)
   case result
   when Ok
@@ -35,10 +36,18 @@ macro render_with_layout(filename)
   render "views/#{ {{filename}} }.ecr", "views/layout.ecr"
 end
 
+macro render_htmx(xhr, filename)
+  {{xhr}} ? render_no_layout({{filename}}) : render_with_layout({{filename}})
+end
+
+
+encryption_key = ENV["AUDIOFEELER_ENCRYPTION_KEY"]
+
 db = DB.open "sqlite3://./data/development.db"
 
 accounts_inventory = Audiofeeler::AccountInventory.new(db)
 events_inventory = Audiofeeler::EventInventory.new(db)
+deployment_inventory = Audiofeeler::DeploymentInventory.new(db, encryption_key)
 
 get "/" do |env|
   env.redirect "/accounts", 303
@@ -55,7 +64,8 @@ end
 get "/accounts/:id" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    render_with_layout "account"
+    deployments = deployment_inventory.find_all(account.id).unwrap
+    render_htmx(is_xhr(env), "account")
   end
 end
 
@@ -64,7 +74,7 @@ get "/accounts/:id/events" do |env|
   handle_result(result, env) do |account|
     result = events_inventory.find_all(account.id)
     handle_result(result, env) do |events|
-      is_xhr(env) ? render_no_layout("events") : render_with_layout("events")
+      render_htmx(is_xhr(env), "events")
     end
   end
 end
@@ -117,24 +127,97 @@ delete "/accounts/:id/events/:eid" do |env|
   end
 end
 
+get "/accounts/:id/deployments/new" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    deployment = Audiofeeler::Deployment.new
+    render_no_layout("deployment_form")
+  end
+end
+
+get "/accounts/:id/deployments/:deployment_id/edit" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
+    handle_result(result, env) do |deployment|
+      if env.params.query["view"] == "credentials"
+        render_no_layout("deployment_credentials_form")
+      else
+        render_no_layout("deployment_paths_form")
+      end
+    end
+  end
+end
+
+post "/accounts/:id/deployments" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deployment_inventory.create(account.id, env.params.body)
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+put "/accounts/:id/deployments/:deployment_id" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deployment_inventory.update(account.id, env.params.url["deployment_id"], env.params.body)
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+post "/accounts/:id/deployments/:deployment_id/release" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deployment_inventory.find_one_decrypted(account.id, env.params.url["deployment_id"])
+    handle_result(result, env) do |deployment|
+      stdout = IO::Memory.new
+      build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
+      build_output = stdout.to_s
+
+      stdout = IO::Memory.new
+      deployment_status = Process.run("npx", ["ftp-deploy", "--server", deployment.server.not_nil!, "--username", deployment.username.not_nil!, "--password", deployment.password.not_nil!, "--local-dir", "data/accounts/#{account.source_dir}/_site/", "--server-dir", deployment.remote_dir.not_nil!], output: stdout)
+      deployment_output = stdout.to_s
+      render_no_layout("deploy_result")
+    end
+  end
+end
+
+delete "/accounts/:id/deployments/:deployment_id" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result = deployment_inventory.delete(account.id, env.params.url["deployment_id"])
+    handle_result(result, env) do
+      env.redirect "/accounts/#{account.id}/config", 303
+    end
+  end
+end
+
+
+get "/accounts/:id/config" do |env|
+  result = accounts_inventory.find_one(env.params.url["id"])
+  handle_result(result, env) do |account|
+    result2 = deployment_inventory.find_all(account.id)
+    handle_result(result2, env) do |deployments|
+      render_htmx(is_xhr(env), "config")
+    end
+  end
+end
+
 get "/accounts/:id/pages" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("pages") : render_with_layout("pages")
+    render_htmx(is_xhr(env), "pages")
   end
 end
 
 get "/accounts/:id/videos" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("videos") : render_with_layout("videos")
-  end
-end
-
-get "/accounts/:id/lyrics" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    is_xhr(env) ? render_no_layout("lyrics") : render_with_layout("lyrics")
+    render_htmx(is_xhr(env), "videos")
   end
 end
 
