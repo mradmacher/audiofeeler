@@ -8,6 +8,8 @@ description: |
   A simple app for managing musicians web pages
 
 dependencies:
+  spec-kemal:
+    github: kemalcr/spec-kemal
   kemal:
     github: kemalcr/kemal
   result:
