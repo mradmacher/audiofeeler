@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@samkirkland/ftp-deploy": "^1.2.4"
+  },
+  "devDependencies": {
+    "cypress": "^14.4.1"
   }
 }
