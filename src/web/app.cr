@@ -1,6 +1,6 @@
 require "kemal"
 require "sqlite3"
-require "./src/audiofeeler"
+require "../audiofeeler"
 
 
 def handle_result(result, env)
@@ -29,11 +29,11 @@ def handle_render(filename, xhr)
 end
 
 macro render_no_layout(filename)
-  render "views/#{ {{filename}} }.ecr"
+  render "src/web/views/#{ {{filename}} }.ecr"
 end
 
 macro render_with_layout(filename)
-  render "views/#{ {{filename}} }.ecr", "views/layout.ecr"
+  render "src/web/views/#{ {{filename}} }.ecr", "src/web/views/layout.ecr"
 end
 
 macro render_htmx(xhr, filename)
