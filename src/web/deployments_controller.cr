@@ -4,6 +4,16 @@ module Web
       accounts_inventory = Audiofeeler::AccountInventory.new(app.db)
       deployment_inventory = Audiofeeler::DeploymentInventory.new(app.db, app.encryption_key)
 
+      app.router.add_route "GET", "/accounts/:id/deployments" do |env|
+        result = accounts_inventory.find_one(env.params.url["id"])
+        handle_result(result, env) do |account|
+          result = deployment_inventory.find_all(account.id)
+          handle_result(result, env) do |deployments|
+            render_htmx(is_xhr(env), "deployments")
+          end
+        end
+      end
+
       app.router.add_route "GET", "/accounts/:id/deployments/new", do |env|
         result = accounts_inventory.find_one(env.params.url["id"])
         handle_result(result, env) do |account|
@@ -31,7 +41,7 @@ module Web
         handle_result(result, env) do |account|
           result = deployment_inventory.create(account.id, env.params.body)
           handle_result(result, env) do
-            env.redirect "/accounts/#{account.id}/config", 303
+            env.redirect "/accounts/#{account.id}/deployments", 303
           end
         end
       end
@@ -41,7 +51,7 @@ module Web
         handle_result(result, env) do |account|
           result = deployment_inventory.update(account.id, env.params.url["deployment_id"], env.params.body)
           handle_result(result, env) do
-            env.redirect "/accounts/#{account.id}/config", 303
+            env.redirect "/accounts/#{account.id}/deployments", 303
           end
         end
       end
@@ -68,7 +78,7 @@ module Web
         handle_result(result, env) do |account|
           result = deployment_inventory.delete(account.id, env.params.url["deployment_id"])
           handle_result(result, env) do
-            env.redirect "/accounts/#{account.id}/config", 303
+            env.redirect "/accounts/#{account.id}/deployments", 303
           end
         end
       end

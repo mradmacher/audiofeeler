@@ -69,16 +69,6 @@ get "/" do |env|
   env.redirect "/accounts", 303
 end
 
-get "/accounts/:id/config" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result2 = deployment_inventory.find_all(account.id)
-    handle_result(result2, env) do |deployments|
-      render_htmx(is_xhr(env), "config")
-    end
-  end
-end
-
 get "/accounts/:id/pages" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
   handle_result(result, env) do |account|

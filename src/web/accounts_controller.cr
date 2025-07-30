@@ -15,7 +15,7 @@ module Web
       app.router.add_route "GET", "/accounts/:id", do |env|
         result = accounts_inventory.find_one(env.params.url["id"])
         handle_result(result, env) do |account|
-          deployments = Array(Audiofeeler::Deployment).new #deployment_inventory.find_all(account.id).unwrap
+          deployments = deployment_inventory.find_all(account.id).unwrap
           render_htmx(is_xhr(env), "account")
         end
       end
