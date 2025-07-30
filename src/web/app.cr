@@ -1,6 +1,9 @@
 require "kemal"
 require "sqlite3"
 require "../audiofeeler"
+require "./accounts_controller"
+require "./events_controller"
+require "./deployments_controller"
 
 
 def handle_result(result, env)
@@ -11,6 +14,7 @@ def handle_result(result, env)
     env.response.status_code = 404
     env.response.close
   when Err
+    Log.error(result.unwrap)
     env.response.status_code = 500
     env.response.close
   end
@@ -40,162 +44,30 @@ macro render_htmx(xhr, filename)
   {{xhr}} ? render_no_layout({{filename}}) : render_with_layout({{filename}})
 end
 
+class App
+  getter db : DB::Database
+  getter :encryption_key
+  getter router : Kemal::RouteHandler
 
-encryption_key = ENV["AUDIOFEELER_ENCRYPTION_KEY"]
+  def initialize
+    @encryption_key = ENV["AUDIOFEELER_ENCRYPTION_KEY"]
+    @db = DB.open "sqlite3://./data/development.db"
+    @router = Kemal::RouteHandler::INSTANCE
+  end
+end
 
-db = DB.open "sqlite3://./data/development.db"
+app = App.new
 
-accounts_inventory = Audiofeeler::AccountInventory.new(db)
-events_inventory = Audiofeeler::EventInventory.new(db)
-deployment_inventory = Audiofeeler::DeploymentInventory.new(db, encryption_key)
+accounts_inventory = Audiofeeler::AccountInventory.new(app.db)
+deployment_inventory = Audiofeeler::DeploymentInventory.new(app.db, app.encryption_key)
+
+Web::AccountsController.configure_routes(app)
+Web::EventsController.configure_routes(app)
+Web::DeploymentsController.configure_routes(app)
 
 get "/" do |env|
   env.redirect "/accounts", 303
 end
-
-get "/accounts" do |env|
-  result = accounts_inventory.find_all
-  handle_result(result, env) do |accounts|
-    account = nil
-    render_with_layout "accounts"
-  end
-end
-
-get "/accounts/:id" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    deployments = deployment_inventory.find_all(account.id).unwrap
-    render_htmx(is_xhr(env), "account")
-  end
-end
-
-get "/accounts/:id/events" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = events_inventory.find_all(account.id)
-    handle_result(result, env) do |events|
-      render_htmx(is_xhr(env), "events")
-    end
-  end
-end
-
-get "/accounts/:id/events/new" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    event = Audiofeeler::Event.new
-    render_no_layout("event_form")
-  end
-end
-
-get "/accounts/:id/events/:eid/edit" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = events_inventory.find_one(account.id, env.params.url["eid"])
-    handle_result(result, env) do |event|
-      render_no_layout("event_form")
-    end
-  end
-end
-
-post "/accounts/:id/events" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = events_inventory.create(account.id, env.params.body)
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/events", 303
-    end
-  end
-end
-
-put "/accounts/:id/events/:eid" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = events_inventory.update(account.id, env.params.url["eid"], env.params.body)
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/events", 303
-    end
-  end
-end
-
-delete "/accounts/:id/events/:eid" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = events_inventory.delete(account.id, env.params.url["eid"])
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/events", 303
-    end
-  end
-end
-
-get "/accounts/:id/deployments/new" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    deployment = Audiofeeler::Deployment.new
-    render_no_layout("deployment_form")
-  end
-end
-
-get "/accounts/:id/deployments/:deployment_id/edit" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = deployment_inventory.find_one(account.id, env.params.url["deployment_id"])
-    handle_result(result, env) do |deployment|
-      if env.params.query["view"] == "credentials"
-        render_no_layout("deployment_credentials_form")
-      else
-        render_no_layout("deployment_paths_form")
-      end
-    end
-  end
-end
-
-post "/accounts/:id/deployments" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = deployment_inventory.create(account.id, env.params.body)
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/config", 303
-    end
-  end
-end
-
-put "/accounts/:id/deployments/:deployment_id" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = deployment_inventory.update(account.id, env.params.url["deployment_id"], env.params.body)
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/config", 303
-    end
-  end
-end
-
-post "/accounts/:id/deployments/:deployment_id/release" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = deployment_inventory.find_one_decrypted(account.id, env.params.url["deployment_id"])
-    handle_result(result, env) do |deployment|
-      stdout = IO::Memory.new
-      build_status = Process.run("bundle", ["exec", "jekyll", "build", "--incremental", "-s", "data/accounts/#{account.source_dir}/", "-d", "data/accounts/#{account.source_dir}/_site/"], output: stdout)
-      build_output = stdout.to_s
-
-      stdout = IO::Memory.new
-      deployment_status = Process.run("npx", ["ftp-deploy", "--server", deployment.server.not_nil!, "--username", deployment.username.not_nil!, "--password", deployment.password.not_nil!, "--local-dir", "data/accounts/#{account.source_dir}/_site/", "--server-dir", deployment.remote_dir.not_nil!], output: stdout)
-      deployment_output = stdout.to_s
-      render_no_layout("deploy_result")
-    end
-  end
-end
-
-delete "/accounts/:id/deployments/:deployment_id" do |env|
-  result = accounts_inventory.find_one(env.params.url["id"])
-  handle_result(result, env) do |account|
-    result = deployment_inventory.delete(account.id, env.params.url["deployment_id"])
-    handle_result(result, env) do
-      env.redirect "/accounts/#{account.id}/config", 303
-    end
-  end
-end
-
 
 get "/accounts/:id/config" do |env|
   result = accounts_inventory.find_one(env.params.url["id"])
