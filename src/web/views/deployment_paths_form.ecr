@@ -16,7 +16,7 @@
     <% else %>
       <button hx-post="/accounts/<%= account.id %>/deployments" hx-target="#content-slot">Create</button>
     <% end %>
-    <button hx-get="/accounts/<%= account.id %>/config" hx-target="#content-slot">Cancel</button>
+    <button hx-get="/accounts/<%= account.id %>/deployments" hx-target="#content-slot">Cancel</button>
   </form>
 </article>
 

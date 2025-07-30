@@ -4,10 +4,6 @@ shards:
     git: https://github.com/sija/backtracer.cr.git
     version: 1.2.4
 
-  crystar:
-    git: https://github.com/naqvis/crystar.git
-    version: 0.3.1
-
   db:
     git: https://github.com/crystal-lang/crystal-db.git
     version: 0.13.1
@@ -15,10 +11,6 @@ shards:
   exception_page:
     git: https://github.com/crystal-loot/exception_page.git
     version: 0.5.0
-
-  habitat:
-    git: https://github.com/luckyframework/habitat.git
-    version: 0.4.9
 
   kemal:
     git: https://github.com/kemalcr/kemal.git
@@ -32,15 +24,11 @@ shards:
     git: https://github.com/nicolab/crystal-result.git
     version: 2.0.1
 
-  selenium:
-    git: https://github.com/crystal-loot/selenium.cr.git
-    version: 0.12.1
+  spec-kemal:
+    git: https://github.com/kemalcr/spec-kemal.git
+    version: 1.0.0
 
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.21.0
-
-  webdrivers:
-    git: https://github.com/matthewmcgarvey/webdrivers.cr.git
-    version: 0.4.4
 

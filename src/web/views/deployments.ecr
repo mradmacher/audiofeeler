@@ -1,4 +1,3 @@
-<h1>Configuration</h1>
 <section>
   <h2>Deployments</h2>
   <% deployments.each do |deployment| %>
@@ -15,11 +14,13 @@
         <dd><%= deployment.password ? "*****" : "-" %></dd>
       </dl>
       <footer>
+        <button hx-post="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/release" hx-target="#deployment-<%= deployment.id %>-result">Release</button>
         <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=paths" hx-target="#deployment-form">Edit paths</button>
         <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=credentials" hx-target="#deployment-form">Edit credentials</button>
         <button class="secondary" hx-delete="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Delete</button>
       </footer>
     </article>
+    <dialog id="deployment-<%= deployment.id %>-result" hx-on:htmx-after-swap="this.showModal()">
   <% end %>
   <% if deployments.size == 0 %>
     <button hx-get="/accounts/<%= account.id %>/deployments/new" hx-target="#deployment-form">Add deployment</button>
