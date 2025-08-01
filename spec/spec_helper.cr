@@ -1,6 +1,6 @@
 require "spec"
 require "sqlite3"
-require "../src/*"
+require "../src/audiofeeler/*"
 
 TESTDB = DB.open "sqlite3://./data/test.db"
 

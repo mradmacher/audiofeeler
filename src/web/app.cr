@@ -1,10 +1,7 @@
 require "kemal"
 require "sqlite3"
-require "../audiofeeler"
-require "./accounts_controller"
-require "./events_controller"
-require "./deployments_controller"
-
+require "../../src/audiofeeler"
+require "./*"
 
 def handle_result(result, env)
   case result

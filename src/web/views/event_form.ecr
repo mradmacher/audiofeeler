@@ -14,20 +14,33 @@
       </fieldset>
       <fieldset>
         <label>
+          Name
+          <input name="event[name]" value="<%= event.name %>"/>
+        </label>
+        <label>
           Venue
           <input name="event[venue]" value="<%= event.venue %>"/>
         </label>
+      </fieldset>
+      <fieldset class="grid">
         <label>
-          Place
-          <input name="event[place]" value="<%= event.place %>"/>
+          Town
+          <input name="event[town]" value="<%= event.town %>"/>
         </label>
         <label>
-          City
-          <input name="event[city]" value="<%= event.city %>"/>
+          Location
+          <input name="event[location]" value="<%= event.location %>"/>
+        </label>
+      </fieldset>
+      <fieldset class="grid">
+        <legend>Status</legend>
+        <label>
+          Current
+          <input type="radio" name="event[status]" value="<%= Audiofeeler::EventStatus::Current.value %>" <% if event.status.current? %> checked <% end %>/>
         </label>
         <label>
-          Address
-          <input name="event[address]" value="<%= event.address %>"/>
+          Archived
+          <input type="radio" name="event[status]" value="<%= Audiofeeler::EventStatus::Archived.value %>" <% if event.status.archived? %> checked <% end %>/>
         </label>
       </fieldset>
     </fieldset>

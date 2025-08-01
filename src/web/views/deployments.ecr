@@ -15,9 +15,9 @@
       </dl>
       <footer>
         <button hx-post="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/release" hx-target="#deployment-<%= deployment.id %>-result">Release</button>
-        <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=paths" hx-target="#deployment-form">Edit paths</button>
-        <button hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=credentials" hx-target="#deployment-form">Edit credentials</button>
-        <button class="secondary" hx-delete="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Delete</button>
+        <button class="secondary" hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=paths" hx-target="#deployment-form">Edit paths</button>
+        <button class="secondary" hx-get="/accounts/<%= account.id %>/deployments/<%= deployment.id %>/edit?view=credentials" hx-target="#deployment-form">Edit credentials</button>
+        <button class="contrast" hx-delete="/accounts/<%= account.id %>/deployments/<%= deployment.id %>" hx-target="#content-slot">Delete</button>
       </footer>
     </article>
     <dialog id="deployment-<%= deployment.id %>-result" hx-on:htmx-after-swap="this.showModal()">

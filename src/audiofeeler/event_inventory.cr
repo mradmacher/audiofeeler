@@ -8,16 +8,17 @@ module Audiofeeler
 
     def find_all(account_id)
       events = Array(Event).new
-      @db.query "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ?", account_id do |rs|
+      @db.query "SELECT id, name, date, hour, venue, town, location, status FROM events WHERE account_id = ?", account_id do |rs|
         rs.each do
           events << Event.new(
             id: rs.read(Int64),
+            name: rs.read(String?),
             date: rs.read(String?),
             hour: rs.read(String?),
             venue: rs.read(String?),
-            place: rs.read(String?),
-            city: rs.read(String?),
-            address: rs.read(String?),
+            town: rs.read(String?),
+            location: rs.read(String?),
+            status: EventStatus.new(rs.read(Int32)),
           )
         end
       end
@@ -28,16 +29,17 @@ module Audiofeeler
     end
 
     def find_one(account_id, event_id)
-      @db.query_one "SELECT id, date, hour, venue, place, city, address FROM events WHERE account_id = ? and id = ?", account_id, event_id do |rs|
+      @db.query_one "SELECT id, name, date, hour, venue, town, location, status FROM events WHERE account_id = ? and id = ?", account_id, event_id do |rs|
         return Ok.done(
           Event.new(
             id: rs.read(Int64),
+            name: rs.read(String?),
             date: rs.read(String?),
             hour: rs.read(String?),
             venue: rs.read(String?),
-            place: rs.read(String?),
-            city: rs.read(String?),
-            address: rs.read(String?),
+            town: rs.read(String?),
+            location: rs.read(String?),
+            status: EventStatus.new(rs.read(Int32)),
           )
         )
       end
@@ -48,8 +50,8 @@ module Audiofeeler
     end
 
     def create(account_id, params)
-      result = @db.exec "INSERT INTO events (account_id, date, hour, venue, place, city, address) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        account_id, params["event[date]"], params["event[hour]"], params["event[venue]"], params["event[place]"], params["event[city]"], params["event[address]"]
+      result = @db.exec "INSERT INTO events (account_id, name, date, hour, venue, town, location, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        account_id, params["event[name]"], params["event[date]"], params["event[hour]"], params["event[venue]"], params["event[town]"], params["event[location]"], params["event[status]"]
 
       Ok.created(result.last_insert_id)
     rescue ex: DB::Error
@@ -57,8 +59,8 @@ module Audiofeeler
     end
 
     def update(account_id, event_id, params)
-      result = @db.exec "UPDATE events SET date = ?, hour = ?, venue = ?, place = ?, city = ?, address = ? WHERE account_id = ? and id = ?",
-        params["event[date]"]?, params["event[hour]"]?, params["event[venue]"]?, params["event[place]"]?, params["event[city]"]?, params["event[address]"], account_id, event_id
+      result = @db.exec "UPDATE events SET name = ?, date = ?, hour = ?, venue = ?, town = ?, location = ?, status = ? WHERE account_id = ? and id = ?",
+        params["event[name]"], params["event[date]"]?, params["event[hour]"]?, params["event[venue]"]?, params["event[town]"]?, params["event[location]"]?, params["event[status]"], account_id, event_id
 
       Ok.updated(event_id)
     rescue ex: DB::Error
@@ -74,4 +76,3 @@ module Audiofeeler
     end
   end
 end
-
