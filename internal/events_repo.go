@@ -1,21 +1,19 @@
 package audiofeeler
 
 import (
-	"context"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mradmacher/audiofeeler/optiomist"
 	"github.com/mradmacher/audiofeeler/sqlbuilder"
 	"time"
 )
 
 type eventRecord struct {
-	id        pgtype.Uint32
-	accountId pgtype.Uint32
-	date      pgtype.Date
-	hour      pgtype.Time
-	venue     pgtype.Text
-	address   pgtype.Text
-	town      pgtype.Text
+	id        uint32
+	accountId uint32
+	date      time.Time
+	hour      time.Time
+	venue     string
+	address   string
+	town      string
 }
 
 type EventsRepo struct {
@@ -32,7 +30,7 @@ func (repo *EventsRepo) Create(event Event) (uint32, error) {
 		"town":       event.Town,
 	}
 	query, values := fields.BuildInsert("events")
-	row := repo.Db.Conn.QueryRow(context.Background(),
+	row := repo.Db.Conn.QueryRow(
 		query,
 		values...,
 	)
@@ -43,24 +41,27 @@ func (repo *EventsRepo) Create(event Event) (uint32, error) {
 
 func buildEventParams(record eventRecord) *Event {
 	event := Event{
-		Id:        optiomist.Optiomize(record.id.Uint32, record.id.Valid),
-		AccountId: optiomist.Optiomize(record.accountId.Uint32, record.accountId.Valid),
-		Date:      optiomist.Optiomize(record.date.Time, record.date.Valid),
-		Venue:     optiomist.Optiomize(record.venue.String, record.venue.Valid),
-		Address:   optiomist.Optiomize(record.address.String, record.address.Valid),
-		Town:      optiomist.Optiomize(record.town.String, record.town.Valid),
+		Id:        optiomist.Optiomize(record.id, true),
+		AccountId: optiomist.Optiomize(record.accountId, true),
+		Date:      optiomist.Optiomize(record.date, true),
+		Venue:     optiomist.Optiomize(record.venue, true),
+		Address:   optiomist.Optiomize(record.address, true),
+		Town:      optiomist.Optiomize(record.town, true),
+		Hour:      optiomist.Optiomize(record.hour, true),
 	}
+	/*
 	opt := optiomist.Optiomize(record.hour.Microseconds, record.hour.Valid)
 	if opt.IsSome() {
 		event.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
 	} else {
 		event.Hour = optiomist.None[time.Time]()
 	}
+	*/
 	return &event
 }
 
 func (repo *EventsRepo) Find(id uint32) (*Event, error) {
-	row := repo.Db.Conn.QueryRow(context.Background(),
+	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, account_id, date, hour, venue, address, town
 		FROM events
@@ -90,7 +91,7 @@ func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 func (repo *EventsRepo) FindAll() (*[]Event, error) {
 	var events []Event
 
-	rows, err := repo.Db.Conn.Query(context.Background(),
+	rows, err := repo.Db.Conn.Query(
 		`
         SELECT id, account_id, date, hour, venue, address, town FROM events;
         `,

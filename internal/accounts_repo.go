@@ -1,17 +1,15 @@
 package audiofeeler
 
 import (
-	"context"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mradmacher/audiofeeler/optiomist"
 	"github.com/mradmacher/audiofeeler/sqlbuilder"
 )
 
 type accountRecord struct {
-	id    pgtype.Uint32
-	name  pgtype.Text
-	title pgtype.Text
-	url   pgtype.Text
+	id    uint32
+	name  string
+	title string
+	url   string
 }
 
 type AccountsRepo struct {
@@ -25,7 +23,7 @@ func (repo *AccountsRepo) Create(account Account) (uint32, error) {
 		"url":   account.Url,
 	}
 	query, values := fields.BuildInsert("accounts")
-	row := repo.Db.Conn.QueryRow(context.Background(),
+	row := repo.Db.Conn.QueryRow(
 		query,
 		values...,
 	)
@@ -36,16 +34,16 @@ func (repo *AccountsRepo) Create(account Account) (uint32, error) {
 
 func buildAccountParams(record accountRecord) *Account {
 	account := Account{
-		Id:    optiomist.Optiomize(record.id.Uint32, record.id.Valid),
-		Name:  optiomist.Optiomize(record.name.String, record.name.Valid),
-		Title: optiomist.Optiomize(record.title.String, record.title.Valid),
-		Url:   optiomist.Optiomize(record.url.String, record.url.Valid),
+		Id:    optiomist.Optiomize(record.id, true),
+		Name:  optiomist.Optiomize(record.name, true),
+		Title: optiomist.Optiomize(record.title, true),
+		Url:   optiomist.Optiomize(record.url, true),
 	}
 	return &account
 }
 
 func (repo *AccountsRepo) FindByName(name string) (Account, error) {
-	row := repo.Db.Conn.QueryRow(context.Background(),
+	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, name, title, url
 		FROM accounts
@@ -72,7 +70,7 @@ func (repo *AccountsRepo) FindByName(name string) (Account, error) {
 func (repo *AccountsRepo) FindAll() ([]Account, error) {
 	var accounts []Account
 
-	rows, err := repo.Db.Conn.Query(context.Background(),
+	rows, err := repo.Db.Conn.Query(
 		`
         SELECT id, name, title, url FROM accounts;
         `,
