@@ -62,11 +62,11 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	if db.Ping() {
-		fmt.Println("Connected to database")
-	} else {
-		panic("Not connected to database")
-	}
+//	if db.Ping() {
+//		fmt.Println("Connected to database")
+//	} else {
+//		panic("Not connected to database")
+//	}
 
 	err = db.RemoveStructure()
 	if err != nil {

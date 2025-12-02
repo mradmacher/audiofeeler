@@ -6,7 +6,7 @@ import (
 )
 
 type accountRecord struct {
-	id    uint32
+	id    int64
 	name  string
 	title string
 	url   string
@@ -16,19 +16,21 @@ type AccountsRepo struct {
 	Db *DbClient
 }
 
-func (repo *AccountsRepo) Create(account Account) (uint32, error) {
+func (repo *AccountsRepo) Create(account Account) (int64, error) {
 	fields := sqlbuilder.Fields{
 		"name":  account.Name,
 		"title": account.Title,
 		"url":   account.Url,
 	}
 	query, values := fields.BuildInsert("accounts")
-	row := repo.Db.Conn.QueryRow(
+	result, err := repo.Db.Conn.Exec(
 		query,
 		values...,
 	)
-	var id uint32
-	err := row.Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	id, _ := result.LastInsertId()
 	return id, err
 }
 

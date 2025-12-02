@@ -8,7 +8,7 @@ import (
 
 type eventRecord struct {
 	id        uint32
-	accountId uint32
+	accountId int64
 	date      time.Time
 	hour      time.Time
 	venue     string

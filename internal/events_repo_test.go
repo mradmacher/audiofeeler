@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func setupAccount(db *DbClient, t *testing.T) uint32 {
+func setupAccount(db *DbClient, t *testing.T) int64 {
 	accountsRepo := AccountsRepo{db}
 	accountId, err := accountsRepo.Create(Account{
 		Name:  optiomist.Some("example"),
@@ -32,7 +32,7 @@ func TestEventsRepo(t *testing.T) {
 	t.Run("Find nil values", testEventsRepo_Find_nils(&r, accountId))
 }
 
-func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
+func testEventsRepo_Create(r *EventsRepo, accountId int64) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
@@ -82,7 +82,7 @@ func testEventsRepo_Create(r *EventsRepo, accountId uint32) func(*testing.T) {
 	}
 }
 
-func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
+func testEventsRepo_Find_not_nils(r *EventsRepo, accountId int64) func(*testing.T) {
 	return func(t *testing.T) {
 		event := Event{
 			AccountId: optiomist.Some(accountId),
@@ -109,7 +109,7 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId uint32) func(*testing
 	}
 }
 
-func testEventsRepo_Find_nils(r *EventsRepo, accountId uint32) func(*testing.T) {
+func testEventsRepo_Find_nils(r *EventsRepo, accountId int64) func(*testing.T) {
 	return func(t *testing.T) {
 		event := Event{
 			AccountId: optiomist.Some(accountId),

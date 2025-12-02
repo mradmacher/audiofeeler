@@ -6,7 +6,7 @@ import (
 )
 
 type AccountView struct {
-	Id    uint32
+	Id    int64
 	Title string
 	Name  string
 	Url   string

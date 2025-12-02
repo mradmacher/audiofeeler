@@ -6,7 +6,7 @@ import (
 )
 
 type Account struct {
-	Id    optiomist.Option[uint32]
+	Id    optiomist.Option[int64]
 	Name  optiomist.Option[string]
 	Title optiomist.Option[string]
 	Url   optiomist.Option[string]
@@ -14,7 +14,7 @@ type Account struct {
 
 type Event struct {
 	Id        optiomist.Option[uint32]
-	AccountId optiomist.Option[uint32]
+	AccountId optiomist.Option[int64]
 	Date      optiomist.Option[time.Time]
 	Hour      optiomist.Option[time.Time]
 	Venue     optiomist.Option[string]
