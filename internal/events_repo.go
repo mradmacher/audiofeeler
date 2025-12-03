@@ -1,8 +1,8 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/optiomist"
-	"github.com/mradmacher/audiofeeler/sqlbuilder"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
 	"time"
 )
 

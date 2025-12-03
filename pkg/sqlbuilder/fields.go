@@ -2,7 +2,7 @@ package sqlbuilder
 
 import (
 	"fmt"
-	"github.com/mradmacher/audiofeeler/optiomist"
+	"github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"strings"
 )
 
