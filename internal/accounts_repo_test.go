@@ -1,7 +1,7 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 )
@@ -21,17 +21,15 @@ func TestAccountsRepo(t *testing.T) {
 
 func testFindAll(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
-		id1, err := r.Create(Account{
-			Name:  optiomist.Some("account1"),
-			Title: optiomist.Some("Account One"),
-			Url:   optiomist.Some("http://account1.com"),
+		id1, err := r.Create(AccountParams{
+			Name:  Some("account1"),
+			SourceDir:   Some("/here"),
 		})
 		assert.NilError(t, err)
 
-		id2, err := r.Create(Account{
-			Name:  optiomist.Some("account2"),
-			Title: optiomist.Some("Account Two"),
-			Url:   optiomist.Some("http://account2.com"),
+		id2, err := r.Create(AccountParams{
+			Name:  Some("account2"),
+			SourceDir: Some("/there"),
 		})
 		assert.NilError(t, err)
 
@@ -49,27 +47,24 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 		got, err := r.FindByName("someaccount")
 		assert.ErrorIs(t, err, newRecordNotFound())
 
-		id, err := r.Create(Account{
-			Name:  optiomist.Some("someaccount"),
-			Title: optiomist.Some("Some Account"),
-			Url:   optiomist.Some("http://someaccount.com"),
+		id, err := r.Create(AccountParams{
+			Name:  Some("someaccount"),
+			SourceDir:  Some("/here"),
 		})
 		assert.NilError(t, err)
 
-		_, err = r.Create(Account{
-			Name:  optiomist.Some("otheraccount"),
-			Title: optiomist.Some("Other Account"),
-			Url:   optiomist.Some("http://otheraccount.com"),
+		_, err = r.Create(AccountParams{
+			Name:  Some("otheraccount"),
+			SourceDir:   Some("/there"),
 		})
 		assert.NilError(t, err)
 
 		got, err = r.FindByName("someaccount")
 		assert.NilError(t, err)
 
-		assert.Equal(t, got.Id.Value(), id)
-		assert.Equal(t, got.Name.Value(), "someaccount")
-		assert.Equal(t, got.Title.Value(), "Some Account")
-		assert.Equal(t, got.Url.Value(), "http://someaccount.com")
+		assert.Equal(t, got.Id, id)
+		assert.Equal(t, got.Name, "someaccount")
+		assert.Equal(t, got.SourceDir, "/here")
 
 		got, err = r.FindByName("yetanotheraccount")
 		assert.ErrorIs(t, err, newRecordNotFound())
@@ -78,16 +73,16 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 
 func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
-		account := Account{
-			Name:  optiomist.Some("this-is-unique"),
-			Title: optiomist.Some("Example"),
+		account := AccountParams{
+			Name:  Some("this-is-unique"),
+			SourceDir: Some("/here"),
 		}
 		_, err := r.Create(account)
 		assert.NilError(t, err)
 
-		dupAccount := Account{
-			Name:  optiomist.Some("this-is-unique"),
-			Title: optiomist.Some("Other Example"),
+		dupAccount := AccountParams{
+			Name:  Some("this-is-unique"),
+			SourceDir: Some("/there"),
 		}
 		_, err = r.Create(dupAccount)
 		assert.Check(t, err != nil, "It should not create record with duplicated name")
@@ -98,20 +93,19 @@ func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name    string
-			account Account
+			account AccountParams
 		}{
 			{
-				"missing name",
-				Account{
-					Name:  optiomist.None[string](),
-					Title: optiomist.Some("Example"),
-					Url:   optiomist.Some("http://onlyexample.com"),
+				"empty name",
+				AccountParams{
+					Name:  Some(""),
+					SourceDir:  Some("/here"),
 				},
 			}, {
-				"missing title",
-				Account{
-					Name: optiomist.None[string](),
-					Url:  optiomist.Some("http://onlyexample.com"),
+				"missing name",
+				AccountParams{
+					Name: None[string](),
+					SourceDir:  Some("/here"),
 				},
 			},
 		}
@@ -130,14 +124,13 @@ func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name    string
-			account Account
+			account AccountParams
 		}{
 			{
 				"all params",
-				Account{
-					Name:  optiomist.Some("example"),
-					Title: optiomist.Some("Example"),
-					Url:   optiomist.Some("http://example.com"),
+				AccountParams{
+					Name:  Some("example"),
+					SourceDir:   Some("/here"),
 				},
 			},
 		}

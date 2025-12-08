@@ -1,22 +1,22 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"strings"
 	"testing"
-	"time"
 )
 
 var exampleEvents string = `
     - date: 2023-11-24
       hour: 20:00
-      venue: Klub XYZ
+      venue: Festiwal
       address: Mostowa 2
-      town: Kraków
+      city: Kraków
+	  place: Pub XYZ
     - date: 2023-08-10
       hour: 19:30
       venue: Księgarnia podróżnicza ABC
-      town: Kraków
+      city: Kraków
     - date: 2024-01-01
       venue: Podgórska Jesień
 `
@@ -33,27 +33,30 @@ func TestLoadEvents(t *testing.T) {
 		t.Fatalf("Collected %d events; expected 3", len(events))
 	}
 
-	wants := []Event{
-		Event{
-			Date:    optiomist.Some(time.Date(2023, 11, 24, 0, 0, 0, 0, time.UTC)),
-			Hour:    optiomist.Some(time.Date(0, 1, 1, 20, 0, 0, 0, time.UTC)),
-			Venue:   optiomist.Some("Klub XYZ"),
-			Address: optiomist.Some("Mostowa 2"),
-			Town:    optiomist.Some("Kraków"),
+	wants := []EventParams{
+		EventParams{
+			Date:    Some("2023-11-24"),
+			Hour:    Some("20:00"),
+			Venue:   Some("Festiwal"),
+			Address: Some("Mostowa 2"),
+			City:    Some("Kraków"),
+			Place:   Some("Pub XYZ"),
 		},
-		Event{
-			Date:    optiomist.Some(time.Date(2023, 8, 10, 0, 0, 0, 0, time.UTC)),
-			Hour:    optiomist.Some(time.Date(0, 1, 1, 19, 30, 0, 0, time.UTC)),
-			Venue:   optiomist.Some("Księgarnia podróżnicza ABC"),
-			Address: optiomist.None[string](),
-			Town:    optiomist.Some("Kraków"),
+		EventParams{
+			Date:    Some("2023-08-10"),
+			Hour:    Some("19:30"),
+			Venue:   Some("Księgarnia podróżnicza ABC"),
+			Address: None[string](),
+			City:    Some("Kraków"),
+			Place:   None[string](),
 		},
-		Event{
-			Date:    optiomist.Some(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-			Hour:    optiomist.None[time.Time](),
-			Venue:   optiomist.Some("Podgórska Jesień"),
-			Address: optiomist.None[string](),
-			Town:    optiomist.None[string](),
+		EventParams{
+			Date:    Some("2024-01-01"),
+			Hour:    None[string](),
+			Venue:   Some("Podgórska Jesień"),
+			Address: None[string](),
+			City:    None[string](),
+			Place:   None[string](),
 		},
 	}
 

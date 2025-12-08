@@ -1,10 +1,9 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gopkg.in/yaml.v3"
 	"io"
-	"time"
 )
 
 type jsonEvent struct {
@@ -12,10 +11,11 @@ type jsonEvent struct {
 	Hour    string
 	Venue   string
 	Address string
-	Town    string
+	City    string
+	Place   string
 }
 
-func LoadEvents(reader io.Reader) (events []Event, err error) {
+func LoadEvents(reader io.Reader) (events []EventParams, err error) {
 	var jsonEvents []jsonEvent
 
 	decoder := yaml.NewDecoder(reader)
@@ -24,41 +24,36 @@ func LoadEvents(reader io.Reader) (events []Event, err error) {
 		return nil, err
 	}
 	for _, jEvent := range jsonEvents {
-		var event = Event{}
+		var event = EventParams{}
 		if jEvent.Date != "" {
-			date, err := time.Parse(time.DateOnly, jEvent.Date)
-			if err != nil {
-				event.Date = optiomist.None[time.Time]()
-			} else {
-				event.Date = optiomist.Some(date)
-			}
+			event.Date = Some(jEvent.Date)
 		} else {
-			event.Date = optiomist.None[time.Time]()
+			event.Date = None[string]()
 		}
 		if jEvent.Hour != "" {
-			hour, err := time.Parse(time.TimeOnly, jEvent.Hour+":00")
-			if err != nil {
-				event.Hour = optiomist.None[time.Time]()
-			} else {
-				event.Hour = optiomist.Some(hour)
-			}
+			event.Hour = Some(jEvent.Hour)
 		} else {
-			event.Hour = optiomist.None[time.Time]()
+			event.Hour = None[string]()
 		}
 		if jEvent.Venue != "" {
-			event.Venue = optiomist.Some(jEvent.Venue)
+			event.Venue = Some(jEvent.Venue)
 		} else {
-			event.Venue = optiomist.None[string]()
+			event.Venue = None[string]()
 		}
 		if jEvent.Address != "" {
-			event.Address = optiomist.Some(jEvent.Address)
+			event.Address = Some(jEvent.Address)
 		} else {
-			event.Address = optiomist.None[string]()
+			event.Address = None[string]()
 		}
-		if jEvent.Town != "" {
-			event.Town = optiomist.Some(jEvent.Town)
+		if jEvent.City != "" {
+			event.City = Some(jEvent.City)
 		} else {
-			event.Town = optiomist.None[string]()
+			event.City = None[string]()
+		}
+		if jEvent.Place != "" {
+			event.City = Some(jEvent.Place)
+		} else {
+			event.Place = None[string]()
 		}
 		events = append(events, event)
 	}

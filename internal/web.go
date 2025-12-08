@@ -7,9 +7,8 @@ import (
 
 type AccountView struct {
 	Id    int64
-	Title string
 	Name  string
-	Url   string
+	SourceDir   string
 }
 
 type App struct {
@@ -70,10 +69,9 @@ func (app *App) accountHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		"application",
 		AccountView{
-			Id:    account.Id.Value(),
-			Title: account.Title.Value(),
-			Name:  account.Name.Value(),
-			Url:   account.Url.Value(),
+			Id:    account.Id,
+			Name:  account.Name,
+			SourceDir:   account.SourceDir,
 		},
 	)
 	if err != nil {
@@ -92,10 +90,9 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, account := range accounts {
 		views = append(views, AccountView{
-			Id:    account.Id.Value(),
-			Title: account.Title.Value(),
-			Name:  account.Name.Value(),
-			Url:   account.Url.Value(),
+			Id:    account.Id,
+			Name:  account.Name,
+			SourceDir:   account.SourceDir,
 		})
 	}
 	err = app.indexTemplate.ExecuteTemplate(

@@ -1,27 +1,37 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
+	"database/sql"
 )
+
+type AccountParams struct {
+	Id    Option[int64]
+	Name  Option[string]
+	SourceDir Option[string]
+}
 
 type accountRecord struct {
 	id    int64
 	name  string
-	title string
-	url   string
+	source_dir string
+}
+type nullableAccountRecord struct {
+	id    sql.Null[int64]
+	name  sql.Null[string]
+	source_dir sql.Null[string]
 }
 
 type AccountsRepo struct {
 	Db *DbClient
 }
 
-func (repo *AccountsRepo) Create(account Account) (int64, error) {
+func (repo *AccountsRepo) Create(account AccountParams) (int64, error) {
 	fields := sqlbuilder.Fields{
-		"name":  account.Name,
-		"title": account.Title,
-		"url":   account.Url,
-	}
+		"source_dir":   account.SourceDir,
+		"name": account.Name,
+    }
 	query, values := fields.BuildInsert("accounts")
 	result, err := repo.Db.Conn.Exec(
 		query,
@@ -36,10 +46,17 @@ func (repo *AccountsRepo) Create(account Account) (int64, error) {
 
 func buildAccountParams(record accountRecord) *Account {
 	account := Account{
-		Id:    optiomist.Optiomize(record.id, true),
-		Name:  optiomist.Optiomize(record.name, true),
-		Title: optiomist.Optiomize(record.title, true),
-		Url:   optiomist.Optiomize(record.url, true),
+		Id:    record.id,
+		Name:  record.name,
+		SourceDir: record.source_dir,
+	}
+	return &account
+}
+func buildNullableAccountParams(record nullableAccountRecord) *Account {
+	account := Account{
+		Id:    record.id.V,
+		Name:  record.name.V,
+		SourceDir:   record.source_dir.V,
 	}
 	return &account
 }
@@ -47,26 +64,25 @@ func buildAccountParams(record accountRecord) *Account {
 func (repo *AccountsRepo) FindByName(name string) (Account, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
-        SELECT id, name, title, url
+        SELECT id, name, source_dir
 		FROM accounts
 		WHERE name = $1;
 		`,
 		name,
 	)
 
-	var record accountRecord
+	record := nullableAccountRecord{}
 	err := row.Scan(
 		&record.id,
 		&record.name,
-		&record.title,
-		&record.url,
+		&record.source_dir,
 	)
 
 	if err != nil {
 		return Account{}, wrapRecordNotFound(err)
 	}
 
-	return *buildAccountParams(record), nil
+	return *buildNullableAccountParams(record), nil
 }
 
 func (repo *AccountsRepo) FindAll() ([]Account, error) {
@@ -74,7 +90,7 @@ func (repo *AccountsRepo) FindAll() ([]Account, error) {
 
 	rows, err := repo.Db.Conn.Query(
 		`
-        SELECT id, name, title, url FROM accounts;
+        SELECT id, name, source_dir FROM accounts;
         `,
 	)
 	defer rows.Close()
@@ -87,8 +103,7 @@ func (repo *AccountsRepo) FindAll() ([]Account, error) {
 		err = rows.Scan(
 			&record.id,
 			&record.name,
-			&record.title,
-			&record.url,
+			&record.source_dir,
 		)
 
 		accounts = append(accounts, *buildAccountParams(record))

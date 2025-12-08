@@ -1,31 +1,29 @@
 package audiofeeler
 
-import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
-	"time"
-)
-
 type Account struct {
-	Id    optiomist.Option[int64]
-	Name  optiomist.Option[string]
-	Title optiomist.Option[string]
-	Url   optiomist.Option[string]
+	Id    int64
+	Name  string
+	SourceDir string
+}
+
+type Deployment struct {
+	Id int64
+	AccountId int64
+	Server string
+	Username string
+	UsernameIV string
+	Password string
+	PasswordIV string
+	RemoteDir string
 }
 
 type Event struct {
-	Id        optiomist.Option[uint32]
-	AccountId optiomist.Option[int64]
-	Date      optiomist.Option[time.Time]
-	Hour      optiomist.Option[time.Time]
-	Venue     optiomist.Option[string]
-	Address   optiomist.Option[string]
-	Town      optiomist.Option[string]
-}
-
-type Artist struct {
-	Name string
-}
-
-type Video struct {
-	Url string
+	Id        uint32
+	AccountId int64
+	Date      string
+	Hour      string
+	Venue     string
+	Place     string
+	City      string
+	Address   string
 }

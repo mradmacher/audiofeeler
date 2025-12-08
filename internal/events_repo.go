@@ -1,33 +1,44 @@
 package audiofeeler
 
 import (
-	"github.com/mradmacher/audiofeeler/pkg/optiomist"
+	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
-	"time"
 )
+type EventParams struct {
+	Id        Option[uint32]
+	AccountId Option[int64]
+	Date      Option[string]
+	Hour      Option[string]
+	Venue     Option[string]
+	Place     Option[string]
+	City      Option[string]
+	Address   Option[string]
+}
 
 type eventRecord struct {
 	id        uint32
 	accountId int64
-	date      time.Time
-	hour      time.Time
+	date      string
+	hour      string
 	venue     string
+	place     string
+	city      string
 	address   string
-	town      string
 }
 
 type EventsRepo struct {
 	Db *DbClient
 }
 
-func (repo *EventsRepo) Create(event Event) (uint32, error) {
+func (repo *EventsRepo) Create(event EventParams) (uint32, error) {
 	fields := sqlbuilder.Fields{
 		"account_id": event.AccountId,
 		"date":       event.Date,
 		"hour":       event.Hour,
 		"venue":      event.Venue,
 		"address":    event.Address,
-		"town":       event.Town,
+		"city":       event.City,
+		"place":      event.Place,
 	}
 	query, values := fields.BuildInsert("events")
 	row := repo.Db.Conn.QueryRow(
@@ -41,29 +52,22 @@ func (repo *EventsRepo) Create(event Event) (uint32, error) {
 
 func buildEventParams(record eventRecord) *Event {
 	event := Event{
-		Id:        optiomist.Optiomize(record.id, true),
-		AccountId: optiomist.Optiomize(record.accountId, true),
-		Date:      optiomist.Optiomize(record.date, true),
-		Venue:     optiomist.Optiomize(record.venue, true),
-		Address:   optiomist.Optiomize(record.address, true),
-		Town:      optiomist.Optiomize(record.town, true),
-		Hour:      optiomist.Optiomize(record.hour, true),
+		Id:        record.id,
+		AccountId: record.accountId,
+		Date:      record.date,
+		Hour:      record.hour,
+		Venue:     record.venue,
+		Address:   record.address,
+		City:      record.city,
+		Place:     record.place,
 	}
-	/*
-	opt := optiomist.Optiomize(record.hour.Microseconds, record.hour.Valid)
-	if opt.IsSome() {
-		event.Hour = optiomist.Some(time.UnixMicro(opt.Value()))
-	} else {
-		event.Hour = optiomist.None[time.Time]()
-	}
-	*/
 	return &event
 }
 
 func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
-        SELECT id, account_id, date, hour, venue, address, town
+        SELECT id, account_id, date, hour, venue, address, city, place
 		FROM events
 		WHERE id = $1
         `,
@@ -78,7 +82,8 @@ func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 		&record.hour,
 		&record.venue,
 		&record.address,
-		&record.town,
+		&record.city,
+		&record.place,
 	)
 
 	if err != nil {
@@ -93,7 +98,7 @@ func (repo *EventsRepo) FindAll() (*[]Event, error) {
 
 	rows, err := repo.Db.Conn.Query(
 		`
-        SELECT id, account_id, date, hour, venue, address, town FROM events;
+        SELECT id, account_id, date, hour, venue, address, city, place FROM events;
         `,
 	)
 	defer rows.Close()
@@ -109,7 +114,8 @@ func (repo *EventsRepo) FindAll() (*[]Event, error) {
 			&record.hour,
 			&record.venue,
 			&record.address,
-			&record.town,
+			&record.city,
+			&record.place,
 		)
 
 		events = append(events, *buildEventParams(record))

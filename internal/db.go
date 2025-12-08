@@ -52,22 +52,35 @@ func (db *DbClient) Ping() bool {
 func (db *DbClient) CreateStructure() error {
 	_, err := db.Conn.Exec(
 		`
-		CREATE TABLE IF NOT EXISTS accounts (
-			id SERIAL PRIMARY KEY,
-			name VARCHAR(255) UNIQUE NOT NULL,
-			title VARCHAR(255) NOT NULL,
-			url VARCHAR(255)
+		CREATE TABLE accounts (
+		  id INTEGER PRIMARY KEY,
+		  name TEXT,
+		  source_dir TEXT
 		);
-        CREATE TABLE IF NOT EXISTS events (
-            id SERIAL PRIMARY KEY,
-			account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
-            date date,
-            hour time,
-            venue VARCHAR(255),
-            address VARCHAR(255),
-            town VARCHAR(255)
-        );
-		CREATE INDEX events_account_id_idx ON events (account_id);
+
+		CREATE TABLE deployments (
+		  id INTEGER PRIMARY KEY,
+		  account_id INTEGER,
+		  server TEXT,
+		  username TEXT,
+		  username_iv TEXT,
+		  password TEXT,
+		  password_iv TEXT,
+		  remote_dir TEXT,
+		  FOREIGN KEY(account_id) REFERENCES accounts(id)
+		);
+
+		CREATE TABLE events (
+		  id INTEGER PRIMARY KEY,
+		  account_id INTEGER,
+		  date TEXT,
+		  hour TEXT,
+		  venue TEXT,
+		  place TEXT,
+		  city TEXT,
+		  address TEXT,
+		  FOREIGN KEY(account_id) REFERENCES accounts(id)
+		);
         `,
 	)
 
@@ -80,8 +93,8 @@ func (db *DbClient) CreateStructure() error {
 func (db *DbClient) RemoveStructure() error {
 	_, err := db.Conn.Exec(
 		`
-		DROP INDEX IF EXISTS events_account_id_idx;
 		DROP TABLE IF EXISTS events;
+		DROP TABLE IF EXISTS deployments;
 		DROP TABLE IF EXISTS accounts;
 		`,
 	)
