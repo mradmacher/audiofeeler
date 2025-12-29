@@ -1,73 +1,79 @@
 package audiofeeler
 
-import (
-	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
-	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
+type DatabaseId uint32
+type EventStatus int
+
+const (
+	EventCurrent EventStatus = iota
+	EventArchived
 )
-type EventParams struct {
-	Id        Option[uint32]
-	AccountId Option[int64]
-	Date      Option[string]
-	Hour      Option[string]
-	Venue     Option[string]
-	Place     Option[string]
-	City      Option[string]
-	Address   Option[string]
+
+type Event struct {
+	Id          DatabaseId
+	AccountId   DatabaseId
+	Name        string
+	Date        string
+	Hour        string
+	Venue       string
+	Town        string
+	Location    string
+	Description string
+	Status      EventStatus
 }
 
 type eventRecord struct {
-	id        uint32
-	accountId int64
-	date      string
-	hour      string
-	venue     string
-	place     string
-	city      string
-	address   string
+	id          uint32
+	accountId   uint32
+	name        string
+	date        string
+	hour        string
+	venue       string
+	town        string
+	location    string
+	description string
+	status      int
 }
 
 type EventsRepo struct {
 	Db *DbClient
 }
 
-func (repo *EventsRepo) Create(event EventParams) (uint32, error) {
-	fields := sqlbuilder.Fields{
-		"account_id": event.AccountId,
-		"date":       event.Date,
-		"hour":       event.Hour,
-		"venue":      event.Venue,
-		"address":    event.Address,
-		"city":       event.City,
-		"place":      event.Place,
+func (repo *EventsRepo) Save(event Event) (DatabaseId, error) {
+	var query string
+	if event.Id == 0 {
+		query = "INSERT INTO events (account_id, name, date, hour, venue, town, location, description, status) " +
+			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) " +
+			"RETURNING id;"
 	}
-	query, values := fields.BuildInsert("events")
 	row := repo.Db.Conn.QueryRow(
 		query,
-		values...,
+		event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, event.Status,
 	)
 	var id uint32
 	err := row.Scan(&id)
-	return id, err
+	return DatabaseId(id), err
 }
 
 func buildEventParams(record eventRecord) *Event {
 	event := Event{
-		Id:        record.id,
-		AccountId: record.accountId,
-		Date:      record.date,
-		Hour:      record.hour,
-		Venue:     record.venue,
-		Address:   record.address,
-		City:      record.city,
-		Place:     record.place,
+		Id:          DatabaseId(record.id),
+		AccountId:   DatabaseId(record.accountId),
+		Name:        record.name,
+		Date:        record.date,
+		Hour:        record.hour,
+		Venue:       record.venue,
+		Town:        record.town,
+		Location:    record.location,
+		Description: record.description,
+		Status:      EventStatus(record.status),
 	}
 	return &event
 }
 
-func (repo *EventsRepo) Find(id uint32) (*Event, error) {
+func (repo *EventsRepo) Find(id DatabaseId) (*Event, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
-        SELECT id, account_id, date, hour, venue, address, city, place
+        SELECT id, account_id, name, date, hour, venue, town, location, description, status
 		FROM events
 		WHERE id = $1
         `,
@@ -78,12 +84,14 @@ func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 	err := row.Scan(
 		&record.id,
 		&record.accountId,
+		&record.name,
 		&record.date,
 		&record.hour,
 		&record.venue,
-		&record.address,
-		&record.city,
-		&record.place,
+		&record.town,
+		&record.location,
+		&record.description,
+		&record.status,
 	)
 
 	if err != nil {
@@ -91,38 +99,4 @@ func (repo *EventsRepo) Find(id uint32) (*Event, error) {
 	}
 
 	return buildEventParams(record), nil
-}
-
-func (repo *EventsRepo) FindAll() (*[]Event, error) {
-	var events []Event
-
-	rows, err := repo.Db.Conn.Query(
-		`
-        SELECT id, account_id, date, hour, venue, address, city, place FROM events;
-        `,
-	)
-	defer rows.Close()
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		var record eventRecord
-		err = rows.Scan(
-			&record.id,
-			&record.accountId,
-			&record.date,
-			&record.hour,
-			&record.venue,
-			&record.address,
-			&record.city,
-			&record.place,
-		)
-
-		events = append(events, *buildEventParams(record))
-	}
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	return &events, nil
 }

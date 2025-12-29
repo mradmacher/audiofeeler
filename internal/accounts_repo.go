@@ -1,25 +1,17 @@
 package audiofeeler
 
 import (
-	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
-	"github.com/mradmacher/audiofeeler/pkg/sqlbuilder"
 	"database/sql"
 )
 
-type AccountParams struct {
-	Id    Option[int64]
-	Name  Option[string]
-	SourceDir Option[string]
-}
-
 type accountRecord struct {
-	id    int64
-	name  string
+	id         int64
+	name       string
 	source_dir string
 }
 type nullableAccountRecord struct {
-	id    sql.Null[int64]
-	name  sql.Null[string]
+	id         sql.Null[int64]
+	name       sql.Null[string]
 	source_dir sql.Null[string]
 }
 
@@ -27,36 +19,38 @@ type AccountsRepo struct {
 	Db *DbClient
 }
 
-func (repo *AccountsRepo) Create(account AccountParams) (int64, error) {
-	fields := sqlbuilder.Fields{
-		"source_dir":   account.SourceDir,
-		"name": account.Name,
-    }
-	query, values := fields.BuildInsert("accounts")
+func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
+	var query string
+	if account.Id == 0 {
+		query = "INSERT INTO accounts (name, source_dir) " +
+			"VALUES ($1, $2) " +
+			"RETURNING id;"
+	}
+
 	result, err := repo.Db.Conn.Exec(
 		query,
-		values...,
+		account.Name, account.SourceDir,
 	)
 	if err != nil {
-		return 0, err
+		return DatabaseId(0), err
 	}
 	id, _ := result.LastInsertId()
-	return id, err
+	return DatabaseId(id), err
 }
 
 func buildAccountParams(record accountRecord) *Account {
 	account := Account{
-		Id:    record.id,
-		Name:  record.name,
+		Id:        DatabaseId(record.id),
+		Name:      record.name,
 		SourceDir: record.source_dir,
 	}
 	return &account
 }
 func buildNullableAccountParams(record nullableAccountRecord) *Account {
 	account := Account{
-		Id:    record.id.V,
-		Name:  record.name.V,
-		SourceDir:   record.source_dir.V,
+		Id:        DatabaseId(record.id.V),
+		Name:      record.name.V,
+		SourceDir: record.source_dir.V,
 	}
 	return &account
 }

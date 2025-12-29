@@ -1,17 +1,18 @@
 package audiofeeler
 
 import (
-	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 )
 
-func setupAccount(db *DbClient, t *testing.T) int64 {
+func setupAccount(db *DbClient, t *testing.T) DatabaseId {
 	accountsRepo := AccountsRepo{db}
-	accountId, err := accountsRepo.Create(AccountParams{
-		Name:  Some("example"),
-		SourceDir: Some("/here"),
-	})
+	accountId, err := accountsRepo.Save(
+		Account{
+			Name: "example",
+			SourceDir: "/here",
+		},
+	)
 	assert.NilError(t, err)
 
 	return accountId
@@ -25,56 +26,49 @@ func TestEventsRepo(t *testing.T) {
 
 	r := EventsRepo{db}
 
-	t.Run("Create", testEventsRepo_Create(&r, accountId))
-	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r, accountId))
-	t.Run("Find nil values", testEventsRepo_Find_nils(&r, accountId))
+	t.Run("Save", testEventsRepo_Save(&r, accountId))
+	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r, DatabaseId(accountId)))
+	t.Run("Find nil values", testEventsRepo_Find_nils(&r, DatabaseId(accountId)))
 }
 
-func testEventsRepo_Create(r *EventsRepo, accountId int64) func(*testing.T) {
+func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
-			event EventParams
+			event Event
 		}{
 			{
 				"some params",
-				EventParams{
-					AccountId: Some(accountId),
-					Date:      Some("2024-02-01"),
-					Hour:      Some("21:00"),
-					Venue:     Some("Some venue"),
-					Address:   Some("Some address"),
-					City:      Some("Some city"),
-					Place:     Some("Some place"),
+				Event{
+					AccountId:   DatabaseId(accountId),
+					Date:        "2024-02-01",
+					Hour:        "21:00",
+					Name:        "Some festival",
+					Venue:       "Some venue",
+					Location:    "Some location",
+					Town:        "Some town",
+					Description: "Some description",
+					Status:      EventCurrent,
 				},
 			}, {
 				"none params",
-				EventParams{
-					AccountId: Some(accountId),
-					Date:      None[string](),
-					Hour:      None[string](),
-					Venue:     None[string](),
-					Address:   None[string](),
-					City:      None[string](),
-					Place:     None[string](),
-				},
-			}, {
-				"nil params",
-				EventParams{
-					AccountId: Some(accountId),
-					Date:      Some(""),
-					Hour:      Some(""),
-					Venue:     Some(""),
-					Address:   Some(""),
-					City:      Some(""),
-					Place:     Some(""),
+				Event{
+					AccountId:   DatabaseId(accountId),
+					Name:        "",
+					Date:        "",
+					Hour:        "",
+					Venue:       "",
+					Town:        "",
+					Location:    "",
+					Description: "",
+					Status:      EventCurrent,
 				},
 			},
 		}
 
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
-				id, err := r.Create(test.event)
+				id, err := r.Save(test.event)
 
 				assert.NilError(t, err)
 				assert.Check(t, id > 0)
@@ -83,19 +77,21 @@ func testEventsRepo_Create(r *EventsRepo, accountId int64) func(*testing.T) {
 	}
 }
 
-func testEventsRepo_Find_not_nils(r *EventsRepo, accountId int64) func(*testing.T) {
+func testEventsRepo_Find_not_nils(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
-		event := EventParams{
-			AccountId: Some(accountId),
-			Date:      Some("2024-02-02"),
-			Hour:      Some("21:00"),
-			Venue:     Some("Some venue"),
-			Address:   Some("Some address"),
-			City:      Some("Some city"),
-			Place:     Some("Some place"),
+		event := Event{
+			AccountId:   accountId,
+			Name:        "Event",
+			Date:        "2024-02-02",
+			Hour:        "21:00",
+			Venue:       "Some venue",
+			Town:        "Some town",
+			Location:    "Some location",
+			Description: "Some description",
+			Status:      EventArchived,
 		}
 
-		id, err := r.Create(event)
+		id, err := r.Save(event)
 		assert.NilError(t, err)
 
 		got, err := r.Find(id)
@@ -104,27 +100,31 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId int64) func(*testing.
 		assert.Equal(t, got.Id, id)
 		assert.Equal(t, got.AccountId, accountId)
 		assert.Equal(t, got.Date, event.Date)
-		assert.Check(t, got.Hour, event.Hour)
+		assert.Equal(t, got.Name, event.Name)
+		assert.Equal(t, got.Hour, event.Hour)
 		assert.Equal(t, got.Venue, event.Venue)
-		assert.Equal(t, got.Address, event.Address)
-		assert.Equal(t, got.City, event.City)
-		assert.Equal(t, got.Place, event.Place)
+		assert.Equal(t, got.Town, event.Town)
+		assert.Equal(t, got.Location, event.Location)
+		assert.Equal(t, got.Description, event.Description)
+		assert.Equal(t, got.Status, event.Status)
 	}
 }
 
-func testEventsRepo_Find_nils(r *EventsRepo, accountId int64) func(*testing.T) {
+func testEventsRepo_Find_nils(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
-		event := EventParams{
-			AccountId: Some(accountId),
-			Date:      None[string](),
-			Hour:      Some(""),
-			Venue:     None[string](),
-			Address:   Some(""),
-			City:      None[string](),
-			Place:     Some(""),
+		event := Event{
+			AccountId:   accountId,
+			Name:        "",
+			Date:        "",
+			Hour:        "",
+			Venue:       "",
+			Town:        "",
+			Location:    "",
+			Description: "",
+			Status:      EventArchived,
 		}
 
-		id, err := r.Create(event)
+		id, err := r.Save(event)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -132,11 +132,12 @@ func testEventsRepo_Find_nils(r *EventsRepo, accountId int64) func(*testing.T) {
 		assert.NilError(t, err)
 		assert.Equal(t, got.Id, id)
 		assert.Equal(t, got.AccountId, accountId)
+		assert.Equal(t, got.Name, "")
 		assert.Equal(t, got.Date, "")
 		assert.Equal(t, got.Hour, "")
 		assert.Equal(t, got.Venue, "")
-		assert.Equal(t, got.Address, "")
-		assert.Equal(t, got.City, "")
-		assert.Equal(t, got.Place, "")
+		assert.Equal(t, got.Town, "")
+		assert.Equal(t, got.Location, "")
+		assert.Equal(t, got.Description, "")
 	}
 }

@@ -1,5 +1,6 @@
 package audiofeeler
 
+/*
 import (
 	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gopkg.in/yaml.v3"
@@ -59,3 +60,4 @@ func LoadEvents(reader io.Reader) (events []EventParams, err error) {
 	}
 	return events, nil
 }
+*/

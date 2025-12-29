@@ -23,11 +23,13 @@ CREATE TABLE deployments (
 CREATE TABLE events (
   id INTEGER PRIMARY KEY,
   account_id INTEGER,
+  name TEXT,
   date TEXT,
   hour TEXT,
   venue TEXT,
-  place TEXT,
-  city TEXT,
-  address TEXT,
+  town TEXT,
+  location TEXT,
+  description TEXT,
+  status INTEGER,
   FOREIGN KEY(account_id) REFERENCES accounts(id)
 );

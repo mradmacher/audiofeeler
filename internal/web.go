@@ -6,7 +6,7 @@ import (
 )
 
 type AccountView struct {
-	Id    int64
+	Id    DatabaseId
 	Name  string
 	SourceDir   string
 }

@@ -1,5 +1,5 @@
 package audiofeeler
-
+/*
 import (
 	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"strings"
@@ -9,16 +9,16 @@ import (
 var exampleEvents string = `
     - date: 2023-11-24
       hour: 20:00
-      venue: Festiwal
-      address: Mostowa 2
-      city: Kraków
-	  place: Pub XYZ
+      name: Festiwal
+      location: Mostowa 2
+      town: Kraków
+	  venue: Pub XYZ
     - date: 2023-08-10
       hour: 19:30
       venue: Księgarnia podróżnicza ABC
-      city: Kraków
+      town: Kraków
     - date: 2024-01-01
-      venue: Podgórska Jesień
+      name: Podgórska Jesień
 `
 
 func TestLoadEvents(t *testing.T) {
@@ -66,3 +66,4 @@ func TestLoadEvents(t *testing.T) {
 		}
 	}
 }
+*/

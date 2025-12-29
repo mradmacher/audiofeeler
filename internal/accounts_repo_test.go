@@ -1,10 +1,15 @@
 package audiofeeler
 
 import (
-	. "github.com/mradmacher/audiofeeler/pkg/optiomist"
 	"gotest.tools/v3/assert"
 	"testing"
 )
+
+type Account struct {
+	Id        DatabaseId
+	Name      string
+	SourceDir string
+}
 
 func TestAccountsRepo(t *testing.T) {
 	teardown, db := setupDbTest(t)
@@ -21,15 +26,15 @@ func TestAccountsRepo(t *testing.T) {
 
 func testFindAll(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
-		id1, err := r.Create(AccountParams{
-			Name:  Some("account1"),
-			SourceDir:   Some("/here"),
+		id1, err := r.Save(Account{
+			Name:      "account1",
+			SourceDir: "/here",
 		})
 		assert.NilError(t, err)
 
-		id2, err := r.Create(AccountParams{
-			Name:  Some("account2"),
-			SourceDir: Some("/there"),
+		id2, err := r.Save(Account{
+			Name:      "account2",
+			SourceDir: "/there",
 		})
 		assert.NilError(t, err)
 
@@ -37,6 +42,63 @@ func testFindAll(r *AccountsRepo) func(*testing.T) {
 		assert.NilError(t, err)
 		t.Log(accounts)
 		t.Log(id1, id2)
+		assert.Equal(t, 2, len(accounts))
+	}
+}
+
+func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
+	return func(t *testing.T) {
+		account := Account{
+			Name:      "this-is-unique",
+			SourceDir: "/here",
+		}
+		_, err := r.Save(account)
+		assert.NilError(t, err)
+
+		dupAccount := Account{
+			Name:      "this-is-unique",
+			SourceDir: "/there",
+		}
+		_, err = r.Save(dupAccount)
+		assert.Check(t, err != nil, "It should not create record with duplicated name")
+	}
+}
+
+func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
+	return func(t *testing.T) {
+		account := Account{
+			Name:      "",
+			SourceDir: "/here",
+		}
+
+		_, err := r.Save(account)
+		assert.Check(t, err != nil, "It should not create record with missing data")
+	}
+}
+
+func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
+	return func(t *testing.T) {
+		tests := []struct {
+			name    string
+			account Account
+		}{
+			{
+				"all params",
+				Account{
+					Name:      "example",
+					SourceDir: "/here",
+				},
+			},
+		}
+
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				id, err := r.Save(test.account)
+
+				assert.NilError(t, err)
+				assert.Check(t, id > 0)
+			})
+		}
 	}
 }
 
@@ -47,15 +109,15 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 		got, err := r.FindByName("someaccount")
 		assert.ErrorIs(t, err, newRecordNotFound())
 
-		id, err := r.Create(AccountParams{
-			Name:  Some("someaccount"),
-			SourceDir:  Some("/here"),
+		id, err := r.Save(Account{
+			Name:      "someaccount",
+			SourceDir: "/here",
 		})
 		assert.NilError(t, err)
 
-		_, err = r.Create(AccountParams{
-			Name:  Some("otheraccount"),
-			SourceDir:   Some("/there"),
+		_, err = r.Save(Account{
+			Name:      "otheraccount",
+			SourceDir: "/there",
 		})
 		assert.NilError(t, err)
 
@@ -68,80 +130,5 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 
 		got, err = r.FindByName("yetanotheraccount")
 		assert.ErrorIs(t, err, newRecordNotFound())
-	}
-}
-
-func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
-	return func(t *testing.T) {
-		account := AccountParams{
-			Name:  Some("this-is-unique"),
-			SourceDir: Some("/here"),
-		}
-		_, err := r.Create(account)
-		assert.NilError(t, err)
-
-		dupAccount := AccountParams{
-			Name:  Some("this-is-unique"),
-			SourceDir: Some("/there"),
-		}
-		_, err = r.Create(dupAccount)
-		assert.Check(t, err != nil, "It should not create record with duplicated name")
-	}
-}
-
-func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
-	return func(t *testing.T) {
-		tests := []struct {
-			name    string
-			account AccountParams
-		}{
-			{
-				"empty name",
-				AccountParams{
-					Name:  Some(""),
-					SourceDir:  Some("/here"),
-				},
-			}, {
-				"missing name",
-				AccountParams{
-					Name: None[string](),
-					SourceDir:  Some("/here"),
-				},
-			},
-		}
-
-		for _, test := range tests {
-			t.Run(test.name, func(t *testing.T) {
-				_, err := r.Create(test.account)
-
-				assert.Check(t, err != nil, "It should not create record with missing data")
-			})
-		}
-	}
-}
-
-func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
-	return func(t *testing.T) {
-		tests := []struct {
-			name    string
-			account AccountParams
-		}{
-			{
-				"all params",
-				AccountParams{
-					Name:  Some("example"),
-					SourceDir:   Some("/here"),
-				},
-			},
-		}
-
-		for _, test := range tests {
-			t.Run(test.name, func(t *testing.T) {
-				id, err := r.Create(test.account)
-
-				assert.NilError(t, err)
-				assert.Check(t, id > 0)
-			})
-		}
 	}
 }
