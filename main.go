@@ -3,10 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"github.com/joho/godotenv"
 	"github.com/mradmacher/audiofeeler/internal"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+      panic("Can't load .env file")
+	}
 	app, err := audiofeeler.NewApp("views", os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)

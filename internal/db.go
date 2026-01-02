@@ -54,8 +54,7 @@ func (db *DbClient) CreateStructure() error {
 		`
 		CREATE TABLE accounts (
 		  id INTEGER PRIMARY KEY,
-		  name TEXT,
-		  source_dir TEXT
+		  name TEXT
 		);
 
 		CREATE TABLE deployments (

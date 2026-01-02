@@ -5,12 +5,6 @@ import (
 	"testing"
 )
 
-type Account struct {
-	Id        DatabaseId
-	Name      string
-	SourceDir string
-}
-
 func TestAccountsRepo(t *testing.T) {
 	teardown, db := setupDbTest(t)
 	defer teardown(t)
@@ -28,13 +22,11 @@ func testFindAll(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		id1, err := r.Save(Account{
 			Name:      "account1",
-			SourceDir: "/here",
 		})
 		assert.NilError(t, err)
 
 		id2, err := r.Save(Account{
 			Name:      "account2",
-			SourceDir: "/there",
 		})
 		assert.NilError(t, err)
 
@@ -50,14 +42,12 @@ func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
 			Name:      "this-is-unique",
-			SourceDir: "/here",
 		}
 		_, err := r.Save(account)
 		assert.NilError(t, err)
 
 		dupAccount := Account{
 			Name:      "this-is-unique",
-			SourceDir: "/there",
 		}
 		_, err = r.Save(dupAccount)
 		assert.Check(t, err != nil, "It should not create record with duplicated name")
@@ -68,7 +58,6 @@ func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
 			Name:      "",
-			SourceDir: "/here",
 		}
 
 		_, err := r.Save(account)
@@ -86,7 +75,6 @@ func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
 				"all params",
 				Account{
 					Name:      "example",
-					SourceDir: "/here",
 				},
 			},
 		}
@@ -111,13 +99,11 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 
 		id, err := r.Save(Account{
 			Name:      "someaccount",
-			SourceDir: "/here",
 		})
 		assert.NilError(t, err)
 
 		_, err = r.Save(Account{
 			Name:      "otheraccount",
-			SourceDir: "/there",
 		})
 		assert.NilError(t, err)
 
@@ -126,7 +112,6 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 
 		assert.Equal(t, got.Id, id)
 		assert.Equal(t, got.Name, "someaccount")
-		assert.Equal(t, got.SourceDir, "/here")
 
 		got, err = r.FindByName("yetanotheraccount")
 		assert.ErrorIs(t, err, newRecordNotFound())

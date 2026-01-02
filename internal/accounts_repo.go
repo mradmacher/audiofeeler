@@ -1,18 +1,13 @@
 package audiofeeler
 
-import (
-	"database/sql"
-)
+type Account struct {
+	Id        DatabaseId
+	Name      string
+}
 
 type accountRecord struct {
 	id         int64
 	name       string
-	source_dir string
-}
-type nullableAccountRecord struct {
-	id         sql.Null[int64]
-	name       sql.Null[string]
-	source_dir sql.Null[string]
 }
 
 type AccountsRepo struct {
@@ -22,14 +17,14 @@ type AccountsRepo struct {
 func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
 	var query string
 	if account.Id == 0 {
-		query = "INSERT INTO accounts (name, source_dir) " +
-			"VALUES ($1, $2) " +
+		query = "INSERT INTO accounts (name) " +
+			"VALUES ($1) " +
 			"RETURNING id;"
 	}
 
 	result, err := repo.Db.Conn.Exec(
 		query,
-		account.Name, account.SourceDir,
+		account.Name,
 	)
 	if err != nil {
 		return DatabaseId(0), err
@@ -38,19 +33,10 @@ func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
 	return DatabaseId(id), err
 }
 
-func buildAccountParams(record accountRecord) *Account {
+func buildAccount(record accountRecord) *Account {
 	account := Account{
 		Id:        DatabaseId(record.id),
 		Name:      record.name,
-		SourceDir: record.source_dir,
-	}
-	return &account
-}
-func buildNullableAccountParams(record nullableAccountRecord) *Account {
-	account := Account{
-		Id:        DatabaseId(record.id.V),
-		Name:      record.name.V,
-		SourceDir: record.source_dir.V,
 	}
 	return &account
 }
@@ -58,25 +44,24 @@ func buildNullableAccountParams(record nullableAccountRecord) *Account {
 func (repo *AccountsRepo) FindByName(name string) (Account, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
-        SELECT id, name, source_dir
+        SELECT id, name
 		FROM accounts
 		WHERE name = $1;
 		`,
 		name,
 	)
 
-	record := nullableAccountRecord{}
+	record := accountRecord{}
 	err := row.Scan(
 		&record.id,
 		&record.name,
-		&record.source_dir,
 	)
 
 	if err != nil {
 		return Account{}, wrapRecordNotFound(err)
 	}
 
-	return *buildNullableAccountParams(record), nil
+	return *buildAccount(record), nil
 }
 
 func (repo *AccountsRepo) FindAll() ([]Account, error) {
@@ -84,7 +69,7 @@ func (repo *AccountsRepo) FindAll() ([]Account, error) {
 
 	rows, err := repo.Db.Conn.Query(
 		`
-        SELECT id, name, source_dir FROM accounts;
+        SELECT id, name FROM accounts;
         `,
 	)
 	defer rows.Close()
@@ -97,10 +82,9 @@ func (repo *AccountsRepo) FindAll() ([]Account, error) {
 		err = rows.Scan(
 			&record.id,
 			&record.name,
-			&record.source_dir,
 		)
 
-		accounts = append(accounts, *buildAccountParams(record))
+		accounts = append(accounts, *buildAccount(record))
 	}
 
 	if rows.Err() != nil {

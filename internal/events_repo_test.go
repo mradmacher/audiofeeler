@@ -10,7 +10,6 @@ func setupAccount(db *DbClient, t *testing.T) DatabaseId {
 	accountId, err := accountsRepo.Save(
 		Account{
 			Name: "example",
-			SourceDir: "/here",
 		},
 	)
 	assert.NilError(t, err)
