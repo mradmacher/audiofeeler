@@ -54,7 +54,7 @@ func (repo *EventsRepo) Save(event Event) (DatabaseId, error) {
 	return DatabaseId(id), err
 }
 
-func buildEventParams(record eventRecord) *Event {
+func buildEvent(record eventRecord) *Event {
 	event := Event{
 		Id:          DatabaseId(record.id),
 		AccountId:   DatabaseId(record.accountId),
@@ -98,5 +98,47 @@ func (repo *EventsRepo) Find(id DatabaseId) (*Event, error) {
 		return nil, err
 	}
 
-	return buildEventParams(record), nil
+	return buildEvent(record), nil
+}
+
+func (repo *EventsRepo) FindAll(accountId DatabaseId) ([]Event, error) {
+	var events []Event
+	rows, err := repo.Db.Conn.Query(
+		`
+        SELECT id, account_id, name, date, hour, venue, town, location, description, status
+		FROM events
+		WHERE account_id = $1
+        `,
+		accountId,
+	)
+
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var record eventRecord
+		rows.Scan(
+			&record.id,
+			&record.accountId,
+			&record.name,
+			&record.date,
+			&record.hour,
+			&record.venue,
+			&record.town,
+			&record.location,
+			&record.description,
+			&record.status,
+		)
+
+
+		events = append(events, *buildEvent(record))
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return events, nil
 }

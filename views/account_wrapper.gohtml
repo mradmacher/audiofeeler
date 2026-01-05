@@ -1,0 +1,28 @@
+{{define "account"}}
+<section>
+  <hgroup>
+    <h1><a href="/{{ .Name }}">{{ .Name }}</a></h1>
+  </hgroup>
+  <nav>
+    <ul>
+      <li>
+        <a hx-get="/accounts/{{.Name}}/events"
+           hx-push-url="true"
+           hx-target="#content-slot">
+           Events
+        </a>
+      </li>
+      <li>
+        <a hx-get="/accounts/{{ .Id }}/deployments"
+           hx-push-url="true"
+           hx-target="#content-slot">
+           Deployments
+        </a>
+      </li>
+    </ul>
+  </nav>
+</section>
+
+<section id="content-slot">
+</section>
+{{end}}
