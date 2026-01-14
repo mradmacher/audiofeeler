@@ -1,13 +1,12 @@
 package audiofeeler
 
 type Deployment struct {
-	Id int64
-	AccountId int64
-	Server string
-	Username string
+	Id         int64
+	AccountId  int64
+	Server     string
+	Username   string
 	UsernameIV string
-	Password string
+	Password   string
 	PasswordIV string
-	RemoteDir string
+	RemoteDir  string
 }
-

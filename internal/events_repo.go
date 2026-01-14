@@ -132,7 +132,6 @@ func (repo *EventsRepo) FindAll(accountId DatabaseId) ([]Event, error) {
 			&record.status,
 		)
 
-
 		events = append(events, *buildEvent(record))
 	}
 

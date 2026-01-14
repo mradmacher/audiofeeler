@@ -1,13 +1,13 @@
 package audiofeeler
 
 type Account struct {
-	Id        DatabaseId
-	Name      string
+	Id   DatabaseId
+	Name string
 }
 
 type accountRecord struct {
-	id         int64
-	name       string
+	id   int64
+	name string
 }
 
 type AccountsRepo struct {
@@ -35,8 +35,8 @@ func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
 
 func buildAccount(record accountRecord) *Account {
 	account := Account{
-		Id:        DatabaseId(record.id),
-		Name:      record.name,
+		Id:   DatabaseId(record.id),
+		Name: record.name,
 	}
 	return &account
 }

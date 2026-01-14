@@ -5,145 +5,17 @@ import (
 	"net/http"
 )
 
-type AccountView struct {
-	Id    DatabaseId
-	Name  string
-}
-
-type AccountsController struct {
-	app *App
-	indexTemplate *template.Template
-	showTemplate  *template.Template
-}
-
-func NewAccountsController(app *App) *AccountsController {
-	controller := AccountsController{}
-	controller.app = app
-
-	controller.indexTemplate = template.Must(
-		template.ParseFiles(
-			app.templatesPath+"/accounts.gohtml",
-			app.templatesPath+"/application.gohtml",
-		),
-	)
-	controller.showTemplate = template.Must(
-		template.ParseFiles(
-			app.templatesPath+"/account.gohtml",
-			app.templatesPath+"/account_wrapper.gohtml",
-			app.templatesPath+"/application.gohtml",
-		),
-	)
-
-	app.router.HandleFunc("GET /{$}", controller.accountsHandler)
-	app.router.HandleFunc("GET /{name}", controller.accountHandler)
-
-	return &controller
-}
-
-func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *http.Request) {
+func assignResponseDefaults(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	repo := AccountsRepo{controller.app.db}
-	account, err := repo.FindByName(r.PathValue("name"))
-	if err != nil {
-		panic(err)
-	}
-	err = controller.showTemplate.ExecuteTemplate(
-		w,
-		"application",
-		AccountView{
-			Id:    account.Id,
-			Name:  account.Name,
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
 }
 
-func (controller *AccountsController) accountsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	repo := AccountsRepo{controller.app.db}
-	accounts, err := repo.FindAll()
-	if err != nil {
-		panic(err)
+func selectTemplateName(r *http.Request) string {
+	templateName := "application"
+	if r.Header.Get("Hx-Request") == "true" {
+		templateName = "content"
 	}
-	var views []AccountView
-
-	for _, account := range accounts {
-		views = append(views, AccountView{
-			Id:    account.Id,
-			Name:  account.Name,
-		})
-	}
-	err = controller.indexTemplate.ExecuteTemplate(
-		w,
-		"application",
-		struct {
-			Accounts []AccountView
-		}{
-			views,
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
+	return templateName
 }
-
-type EventsController struct {
-	app *App
-	indexTemplate *template.Template
-}
-
-func NewEventsController(app *App) *EventsController {
-	controller := EventsController{}
-	controller.app = app
-
-	controller.indexTemplate = template.Must(
-		template.ParseFiles(
-			app.templatesPath+"/events.gohtml",
-			app.templatesPath+"/account_wrapper.gohtml",
-			app.templatesPath+"/application.gohtml",
-		),
-	)
-
-	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		templateName := "application"
-		if (r.Header.Get("Hx-Request") == "true") {
-			templateName = "details"
-		}
-
-		accountsRepo := AccountsRepo{controller.app.db}
-		repo := EventsRepo{controller.app.db}
-		accountName := r.PathValue("accountName")
-		//id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		account, err := accountsRepo.FindByName(accountName)
-		if err != nil {
-			panic(err)
-		}
-		events, err := repo.FindAll(account.Id)
-		if err != nil {
-			panic(err)
-		}
-		err = controller.indexTemplate.ExecuteTemplate(
-			w,
-			templateName,
-			struct {
-				Account Account
-				Events []Event
-			}{
-				account,
-				events,
-			},
-		)
-		if err != nil {
-			panic(err)
-		}
-	})
-
-	return &controller
-}
-
 
 type App struct {
 	router        *http.ServeMux
@@ -166,6 +38,14 @@ func NewApp(templatesPath string, dbUrl string) (*App, error) {
 	NewEventsController(&app)
 
 	return &app, nil
+}
+
+func (app *App) ParseTemplate(names ...string) *template.Template {
+	files := []string{app.templatesPath + "/application.gohtml"}
+	for _, name := range names {
+		files = append(files, app.templatesPath+"/"+name+".gohtml")
+	}
+	return template.Must(template.ParseFiles(files...))
 }
 
 func (app *App) Start() {

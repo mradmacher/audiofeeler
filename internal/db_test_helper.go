@@ -1,15 +1,15 @@
 package audiofeeler
 
 import (
+	"github.com/joho/godotenv"
 	"os"
 	"testing"
-	"github.com/joho/godotenv"
 )
 
 func setupDbTest(t *testing.T) (func(*testing.T), *DbClient) {
 	err := godotenv.Load()
 	if err != nil {
-      t.Fatalf("Can't load .env file")
+		t.Fatalf("Can't load .env file")
 	}
 	db, err := NewDbClient(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {

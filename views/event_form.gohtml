@@ -1,0 +1,47 @@
+{{define "content"}}
+<article>
+  <form method="post">
+    <fieldset>
+      <legend><h3>Event details</h3></legend>
+      <label>
+        Name
+        <input name="event[name]" value="{{.Event.Name}}"/>
+      </label>
+      <fieldset class="grid">
+        <label>
+          Date
+          <input name="event[date]" value="{{.Event.Date}}"/>
+        </label>
+        <label>
+          Hour
+          <input name="event[hour]" value="{{.Event.Hour}}"/>
+        </label>
+      </fieldset>
+      <fieldset>
+        <label>
+          Venue
+          <input name="event[venue]" value="{{.Event.Venue}}"/>
+        </label>
+        <label>
+          Town
+          <input name="event[town]" value="{{.Event.Town}}"/>
+        </label>
+        <label>
+          Location
+          <input name="event[location]" value="{{.Event.Location}}"/>
+        </label>
+      </fieldset>
+      <label>
+        Description
+        <textarea name="event[description]" value="{{.Event.Description}}"></textarea>
+      </label>
+    </fieldset>
+    {{ if .Event.Id }}
+      <button hx-put="/accounts/{{.Account.Name}}/events/{{.Event.Id}}" hx-target="#content-slot">Save event</button>
+    {{ else }}
+      <button hx-post="/accounts/{{.Account.Name}}/events" hx-target="#content-slot">Create event</button>
+    {{ end }}
+    <button hx-get="/accounts/{{.Account.Name}}/events" hx-target="#content-slot">Cancel</button>
+  </form>
+</article>
+{{end}}

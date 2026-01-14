@@ -21,12 +21,12 @@ func TestAccountsRepo(t *testing.T) {
 func testFindAll(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		id1, err := r.Save(Account{
-			Name:      "account1",
+			Name: "account1",
 		})
 		assert.NilError(t, err)
 
 		id2, err := r.Save(Account{
-			Name:      "account2",
+			Name: "account2",
 		})
 		assert.NilError(t, err)
 
@@ -41,13 +41,13 @@ func testFindAll(r *AccountsRepo) func(*testing.T) {
 func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
-			Name:      "this-is-unique",
+			Name: "this-is-unique",
 		}
 		_, err := r.Save(account)
 		assert.NilError(t, err)
 
 		dupAccount := Account{
-			Name:      "this-is-unique",
+			Name: "this-is-unique",
 		}
 		_, err = r.Save(dupAccount)
 		assert.Check(t, err != nil, "It should not create record with duplicated name")
@@ -57,7 +57,7 @@ func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
 func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
-			Name:      "",
+			Name: "",
 		}
 
 		_, err := r.Save(account)
@@ -74,7 +74,7 @@ func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
 			{
 				"all params",
 				Account{
-					Name:      "example",
+					Name: "example",
 				},
 			},
 		}
@@ -98,12 +98,12 @@ func testFindByName(r *AccountsRepo) func(*testing.T) {
 		assert.ErrorIs(t, err, newRecordNotFound())
 
 		id, err := r.Save(Account{
-			Name:      "someaccount",
+			Name: "someaccount",
 		})
 		assert.NilError(t, err)
 
 		_, err = r.Save(Account{
-			Name:      "otheraccount",
+			Name: "otheraccount",
 		})
 		assert.NilError(t, err)
 
