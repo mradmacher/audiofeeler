@@ -70,7 +70,7 @@ func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 				id, err := r.Save(test.event)
 
 				assert.NilError(t, err)
-				assert.Check(t, id > 0)
+				assert.Check(t, IsDatabaseIdSet(id))
 			})
 		}
 	}

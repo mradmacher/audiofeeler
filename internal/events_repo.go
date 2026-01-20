@@ -1,6 +1,5 @@
 package audiofeeler
 
-type DatabaseId uint32
 type EventStatus int
 
 const (
@@ -22,8 +21,8 @@ type Event struct {
 }
 
 type eventRecord struct {
-	id          uint32
-	accountId   uint32
+	id          string
+	accountId   string
 	name        string
 	date        string
 	hour        string
@@ -40,18 +39,25 @@ type EventsRepo struct {
 
 func (repo *EventsRepo) Save(event Event) (DatabaseId, error) {
 	var query string
-	if event.Id == 0 {
-		query = "INSERT INTO events (account_id, name, date, hour, venue, town, location, description, status) " +
-			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) " +
-			"RETURNING id;"
+	var id DatabaseId
+	var err error
+	if IsDatabaseIdSet(event.Id) {
+		id = event.Id
+	} else {
+		query = "INSERT INTO event (id, account_id, name, date, hour, venue, town, location, description, status) " +
+			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);"
+		if id, err = NewDatabaseId(); err != nil {
+			return id, err
+		}
 	}
-	row := repo.Db.Conn.QueryRow(
+	_, err = repo.Db.Conn.Exec(
 		query,
-		event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, event.Status,
+		id, event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, event.Status,
 	)
-	var id uint32
-	err := row.Scan(&id)
-	return DatabaseId(id), err
+	if err != nil {
+		return NewUnsetDatabaseId(), err
+	}
+	return id, err
 }
 
 func buildEvent(record eventRecord) *Event {
@@ -74,7 +80,7 @@ func (repo *EventsRepo) Find(id DatabaseId) (*Event, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, account_id, name, date, hour, venue, town, location, description, status
-		FROM events
+		FROM event
 		WHERE id = $1
         `,
 		id,
@@ -106,7 +112,7 @@ func (repo *EventsRepo) FindAll(accountId DatabaseId) ([]Event, error) {
 	rows, err := repo.Db.Conn.Query(
 		`
         SELECT id, account_id, name, date, hour, venue, town, location, description, status
-		FROM events
+		FROM event
 		WHERE account_id = $1
         `,
 		accountId,

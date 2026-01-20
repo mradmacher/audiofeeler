@@ -6,7 +6,7 @@ type Account struct {
 }
 
 type accountRecord struct {
-	id   int64
+	id   string
 	name string
 }
 
@@ -16,21 +16,21 @@ type AccountsRepo struct {
 
 func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
 	var query string
-	if account.Id == 0 {
-		query = "INSERT INTO accounts (name) " +
-			"VALUES ($1) " +
-			"RETURNING id;"
+	var id DatabaseId
+	var err error
+	if IsDatabaseIdSet(account.Id) {
+		id = account.Id
+	} else {
+		id = account.Id
+		query = "INSERT INTO account (id, name) VALUES ($1, $2)"
+		if id, err = NewDatabaseId(); err != nil {
+			return id, err
+		}
 	}
-
-	result, err := repo.Db.Conn.Exec(
-		query,
-		account.Name,
-	)
-	if err != nil {
-		return DatabaseId(0), err
+	if _, err = repo.Db.Conn.Exec(query, id, account.Name); err != nil {
+		return NewUnsetDatabaseId(), err
 	}
-	id, _ := result.LastInsertId()
-	return DatabaseId(id), err
+	return id, nil
 }
 
 func buildAccount(record accountRecord) *Account {
@@ -45,7 +45,7 @@ func (repo *AccountsRepo) FindByName(name string) (Account, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, name
-		FROM accounts
+		FROM account
 		WHERE name = $1;
 		`,
 		name,
@@ -69,7 +69,7 @@ func (repo *AccountsRepo) FindAll() ([]Account, error) {
 
 	rows, err := repo.Db.Conn.Query(
 		`
-        SELECT id, name FROM accounts;
+        SELECT id, name FROM account;
         `,
 	)
 	defer rows.Close()

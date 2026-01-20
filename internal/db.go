@@ -2,9 +2,11 @@ package audiofeeler
 
 import (
 	"database/sql"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type DatabaseId string
 type RecordNotFound struct{}
 
 func (err RecordNotFound) Error() string {
@@ -26,6 +28,27 @@ type DbClient struct {
 	Conn *sql.DB
 }
 
+func NewDatabaseId() (DatabaseId, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return NewUnsetDatabaseId(), err
+	}
+
+	return DatabaseId(id.String()), nil
+}
+
+func NewUnsetDatabaseId() DatabaseId {
+	return DatabaseId("")
+}
+
+func IsDatabaseIdSet(id DatabaseId) bool {
+	if id == NewUnsetDatabaseId() {
+		return false
+	} else {
+		return true
+	}
+}
+
 func NewDbClient(dbUrl string) (*DbClient, error) {
 	conn, err := sql.Open("sqlite3", dbUrl)
 	if err != nil {
@@ -38,40 +61,29 @@ func (db *DbClient) Close() {
 	db.Conn.Close()
 }
 
-/*
-func (db *DbClient) Ping() bool {
-	err := db.Conn.Ping(context.Background())
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
-}
-*/
-
 func (db *DbClient) CreateStructure() error {
 	_, err := db.Conn.Exec(
 		`
-		CREATE TABLE accounts (
-		  id INTEGER PRIMARY KEY,
+		CREATE TABLE account (
+		  id TEXT PRIMARY KEY,
 		  name TEXT
 		);
 
-		CREATE TABLE deployments (
-		  id INTEGER PRIMARY KEY,
-		  account_id INTEGER,
+		CREATE TABLE deployment (
+		  id TEXT PRIMARY KEY,
+		  account_id INTEGER NOT NULL,
 		  server TEXT,
 		  username TEXT,
 		  username_iv TEXT,
 		  password TEXT,
 		  password_iv TEXT,
 		  remote_dir TEXT,
-		  FOREIGN KEY(account_id) REFERENCES accounts(id)
+		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 		);
 
-		CREATE TABLE events (
-		  id INTEGER PRIMARY KEY,
-		  account_id INTEGER,
+		CREATE TABLE event (
+		  id TEXT PRIMARY KEY,
+		  account_id INTEGER NOT NULL,
 		  name TEXT,
 		  date TEXT,
 		  hour TEXT,
@@ -80,7 +92,7 @@ func (db *DbClient) CreateStructure() error {
 		  location TEXT,
 		  description TEXT,
 		  status INTEGER,
-		  FOREIGN KEY(account_id) REFERENCES accounts(id)
+		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 		);
         `,
 	)
@@ -94,9 +106,9 @@ func (db *DbClient) CreateStructure() error {
 func (db *DbClient) RemoveStructure() error {
 	_, err := db.Conn.Exec(
 		`
-		DROP TABLE IF EXISTS events;
-		DROP TABLE IF EXISTS deployments;
-		DROP TABLE IF EXISTS accounts;
+		DROP TABLE IF EXISTS event;
+		DROP TABLE IF EXISTS deployment;
+		DROP TABLE IF EXISTS account;
 		`,
 	)
 	return err

@@ -84,7 +84,7 @@ func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
 				id, err := r.Save(test.account)
 
 				assert.NilError(t, err)
-				assert.Check(t, id > 0)
+				assert.Check(t, IsDatabaseIdSet(id))
 			})
 		}
 	}
