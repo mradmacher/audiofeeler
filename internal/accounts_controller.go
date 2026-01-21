@@ -31,7 +31,7 @@ func NewAccountsController(app *App) *AccountsController {
 
 func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *http.Request) {
 	assignResponseDefaults(w)
-	repo := AccountsRepo{controller.app.db}
+	repo := AccountRepo{controller.app.db}
 	account, err := repo.FindByName(r.PathValue("name"))
 	if err != nil {
 		panic(err)
@@ -51,7 +51,7 @@ func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *h
 
 func (controller *AccountsController) accountsHandler(w http.ResponseWriter, r *http.Request) {
 	assignResponseDefaults(w)
-	repo := AccountsRepo{controller.app.db}
+	repo := AccountRepo{controller.app.db}
 	accounts, err := repo.FindAll()
 	if err != nil {
 		panic(err)

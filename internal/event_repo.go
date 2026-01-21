@@ -3,8 +3,8 @@ package audiofeeler
 type EventStatus int
 
 const (
-	EventCurrent EventStatus = iota
-	EventArchived
+	CurrentEvent EventStatus = iota
+	ArchivedEvent
 )
 
 type Event struct {
@@ -30,17 +30,23 @@ type eventRecord struct {
 	town        string
 	location    string
 	description string
-	status      int
+	status      string
 }
 
-type EventsRepo struct {
+type EventRepo struct {
 	Db *DbClient
 }
 
-func (repo *EventsRepo) Save(event Event) (DatabaseId, error) {
+func (repo *EventRepo) Save(event Event) (DatabaseId, error) {
 	var query string
 	var id DatabaseId
 	var err error
+	var eventStatus string
+	if event.Status == CurrentEvent {
+		eventStatus = "current"
+	} else {
+		eventStatus = "archived"
+	}
 	if IsDatabaseIdSet(event.Id) {
 		id = event.Id
 	} else {
@@ -52,7 +58,7 @@ func (repo *EventsRepo) Save(event Event) (DatabaseId, error) {
 	}
 	_, err = repo.Db.Conn.Exec(
 		query,
-		id, event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, event.Status,
+		id, event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, eventStatus,
 	)
 	if err != nil {
 		return NewUnsetDatabaseId(), err
@@ -71,12 +77,17 @@ func buildEvent(record eventRecord) *Event {
 		Town:        record.town,
 		Location:    record.location,
 		Description: record.description,
-		Status:      EventStatus(record.status),
+	}
+	switch record.status {
+	case "archived":
+		event.Status = ArchivedEvent
+	default:
+		event.Status = CurrentEvent
 	}
 	return &event
 }
 
-func (repo *EventsRepo) Find(id DatabaseId) (*Event, error) {
+func (repo *EventRepo) Find(id DatabaseId) (*Event, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, account_id, name, date, hour, venue, town, location, description, status
@@ -107,7 +118,7 @@ func (repo *EventsRepo) Find(id DatabaseId) (*Event, error) {
 	return buildEvent(record), nil
 }
 
-func (repo *EventsRepo) FindAll(accountId DatabaseId) ([]Event, error) {
+func (repo *EventRepo) FindAll(accountId DatabaseId) ([]Event, error) {
 	var events []Event
 	rows, err := repo.Db.Conn.Query(
 		`

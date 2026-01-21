@@ -64,6 +64,13 @@ func (db *DbClient) Close() {
 func (db *DbClient) CreateStructure() error {
 	_, err := db.Conn.Exec(
 		`
+		CREATE TABLE event_status (
+			value TEXT NOT NULL PRIMARY KEY
+		);
+
+		INSERT INTO event_status (value)
+		  VALUES ('current'), ('archived');
+
 		CREATE TABLE account (
 		  id TEXT PRIMARY KEY,
 		  name TEXT
@@ -91,8 +98,9 @@ func (db *DbClient) CreateStructure() error {
 		  town TEXT,
 		  location TEXT,
 		  description TEXT,
-		  status INTEGER,
-		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+		  status TEXT NOT NULL,
+		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+		  FOREIGN KEY(status) REFERENCES event_status(value) ON UPDATE RESTRICT ON DELETE RESTRICT
 		);
         `,
 	)
@@ -107,6 +115,7 @@ func (db *DbClient) RemoveStructure() error {
 	_, err := db.Conn.Exec(
 		`
 		DROP TABLE IF EXISTS event;
+		DROP TABLE IF EXISTS event_status;
 		DROP TABLE IF EXISTS deployment;
 		DROP TABLE IF EXISTS account;
 		`,

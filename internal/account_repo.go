@@ -10,11 +10,11 @@ type accountRecord struct {
 	name string
 }
 
-type AccountsRepo struct {
+type AccountRepo struct {
 	Db *DbClient
 }
 
-func (repo *AccountsRepo) Save(account Account) (DatabaseId, error) {
+func (repo *AccountRepo) Save(account Account) (DatabaseId, error) {
 	var query string
 	var id DatabaseId
 	var err error
@@ -41,7 +41,7 @@ func buildAccount(record accountRecord) *Account {
 	return &account
 }
 
-func (repo *AccountsRepo) FindByName(name string) (Account, error) {
+func (repo *AccountRepo) FindByName(name string) (Account, error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, name
@@ -64,7 +64,7 @@ func (repo *AccountsRepo) FindByName(name string) (Account, error) {
 	return *buildAccount(record), nil
 }
 
-func (repo *AccountsRepo) FindAll() ([]Account, error) {
+func (repo *AccountRepo) FindAll() ([]Account, error) {
 	var accounts []Account
 
 	rows, err := repo.Db.Conn.Query(

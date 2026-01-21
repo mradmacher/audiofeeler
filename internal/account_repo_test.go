@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func TestAccountsRepo(t *testing.T) {
+func TestAccountRepo(t *testing.T) {
 	teardown, db := setupDbTest(t)
 	defer teardown(t)
 
-	r := AccountsRepo{db}
+	r := AccountRepo{db}
 
 	t.Run("Create with all params", testCreate_allParams(&r))
 	t.Run("Create with missing params", testCreate_missingParams(&r))
@@ -18,7 +18,7 @@ func TestAccountsRepo(t *testing.T) {
 	t.Run("FindByName", testFindByName(&r))
 }
 
-func testFindAll(r *AccountsRepo) func(*testing.T) {
+func testFindAll(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		id1, err := r.Save(Account{
 			Name: "account1",
@@ -38,7 +38,7 @@ func testFindAll(r *AccountsRepo) func(*testing.T) {
 	}
 }
 
-func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
+func testCreate_duplicatedName(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
 			Name: "this-is-unique",
@@ -54,7 +54,7 @@ func testCreate_duplicatedName(r *AccountsRepo) func(*testing.T) {
 	}
 }
 
-func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
+func testCreate_missingParams(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
 			Name: "",
@@ -65,7 +65,7 @@ func testCreate_missingParams(r *AccountsRepo) func(*testing.T) {
 	}
 }
 
-func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
+func testCreate_allParams(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name    string
@@ -90,7 +90,7 @@ func testCreate_allParams(r *AccountsRepo) func(*testing.T) {
 	}
 }
 
-func testFindByName(r *AccountsRepo) func(*testing.T) {
+func testFindByName(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		var got Account
 

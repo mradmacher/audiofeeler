@@ -21,11 +21,11 @@ func NewEventsController(app *App) *EventsController {
 	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
 		assignResponseDefaults(w)
 
-		accountsRepo := AccountsRepo{controller.app.db}
-		repo := EventsRepo{controller.app.db}
+		accountRepo := AccountRepo{controller.app.db}
+		repo := EventRepo{controller.app.db}
 		accountName := r.PathValue("accountName")
 		//id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		account, err := accountsRepo.FindByName(accountName)
+		account, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}
@@ -52,10 +52,10 @@ func NewEventsController(app *App) *EventsController {
 	app.router.HandleFunc("GET /accounts/{accountName}/events/new", func(w http.ResponseWriter, r *http.Request) {
 		assignResponseDefaults(w)
 
-		accountsRepo := AccountsRepo{controller.app.db}
+		accountRepo := AccountRepo{controller.app.db}
 		accountName := r.PathValue("accountName")
 		//id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		account, err := accountsRepo.FindByName(accountName)
+		account, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}

@@ -6,8 +6,8 @@ import (
 )
 
 func setupAccount(db *DbClient, t *testing.T) DatabaseId {
-	accountsRepo := AccountsRepo{db}
-	accountId, err := accountsRepo.Save(
+	accountRepo := AccountRepo{db}
+	accountId, err := accountRepo.Save(
 		Account{
 			Name: "example",
 		},
@@ -17,20 +17,20 @@ func setupAccount(db *DbClient, t *testing.T) DatabaseId {
 	return accountId
 }
 
-func TestEventsRepo(t *testing.T) {
+func TestEventRepo(t *testing.T) {
 	teardown, db := setupDbTest(t)
 	defer teardown(t)
 
 	accountId := setupAccount(db, t)
 
-	r := EventsRepo{db}
+	r := EventRepo{db}
 
-	t.Run("Save", testEventsRepo_Save(&r, accountId))
-	t.Run("Find not nil values", testEventsRepo_Find_not_nils(&r, DatabaseId(accountId)))
-	t.Run("Find nil values", testEventsRepo_Find_nils(&r, DatabaseId(accountId)))
+	t.Run("Save", testEventRepo_Save(&r, accountId))
+	t.Run("Find not nil values", testEventRepo_Find_not_nils(&r, DatabaseId(accountId)))
+	t.Run("Find nil values", testEventRepo_Find_nils(&r, DatabaseId(accountId)))
 }
 
-func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
+func testEventRepo_Save(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
@@ -47,7 +47,7 @@ func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 					Location:    "Some location",
 					Town:        "Some town",
 					Description: "Some description",
-					Status:      EventCurrent,
+					Status:      CurrentEvent,
 				},
 			}, {
 				"none params",
@@ -60,7 +60,7 @@ func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 					Town:        "",
 					Location:    "",
 					Description: "",
-					Status:      EventCurrent,
+					Status:      CurrentEvent,
 				},
 			},
 		}
@@ -76,7 +76,7 @@ func testEventsRepo_Save(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
 	}
 }
 
-func testEventsRepo_Find_not_nils(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
+func testEventRepo_Find_not_nils(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		event := Event{
 			AccountId:   accountId,
@@ -87,7 +87,7 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId DatabaseId) func(*tes
 			Town:        "Some town",
 			Location:    "Some location",
 			Description: "Some description",
-			Status:      EventArchived,
+			Status:      ArchivedEvent,
 		}
 
 		id, err := r.Save(event)
@@ -109,7 +109,7 @@ func testEventsRepo_Find_not_nils(r *EventsRepo, accountId DatabaseId) func(*tes
 	}
 }
 
-func testEventsRepo_Find_nils(r *EventsRepo, accountId DatabaseId) func(*testing.T) {
+func testEventRepo_Find_nils(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		event := Event{
 			AccountId:   accountId,
@@ -120,7 +120,7 @@ func testEventsRepo_Find_nils(r *EventsRepo, accountId DatabaseId) func(*testing
 			Town:        "",
 			Location:    "",
 			Description: "",
-			Status:      EventArchived,
+			Status:      ArchivedEvent,
 		}
 
 		id, err := r.Save(event)
