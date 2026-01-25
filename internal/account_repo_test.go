@@ -95,7 +95,7 @@ func testFindByName(r *AccountRepo) func(*testing.T) {
 		var got Account
 
 		got, err := r.FindByName("someaccount")
-		assert.ErrorIs(t, err, newRecordNotFound())
+		assert.ErrorIs(t, err, ErrNotFound)
 
 		id, err := r.Save(Account{
 			Name: "someaccount",
@@ -114,6 +114,6 @@ func testFindByName(r *AccountRepo) func(*testing.T) {
 		assert.Equal(t, got.Name, "someaccount")
 
 		got, err = r.FindByName("yetanotheraccount")
-		assert.ErrorIs(t, err, newRecordNotFound())
+		assert.ErrorIs(t, err, ErrNotFound)
 	}
 }

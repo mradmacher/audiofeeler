@@ -58,7 +58,7 @@ func (repo *AccountRepo) FindByName(name string) (Account, error) {
 	)
 
 	if err != nil {
-		return Account{}, wrapRecordNotFound(err)
+		return Account{}, errNotFoundOr(err)
 	}
 
 	return *buildAccount(record), nil

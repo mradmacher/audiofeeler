@@ -2,6 +2,7 @@ package audiofeeler
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
@@ -11,19 +12,13 @@ import (
 const sqlDir = "../db/"
 
 type DatabaseId string
-type RecordNotFound struct{}
 
-func (err RecordNotFound) Error() string {
-	return "No record found in database"
-}
+var ErrNotFound = errors.New("Record with given ID not found in database")
+var ErrIdGenFailed = errors.New("Database ID generation failed")
 
-func newRecordNotFound() error {
-	return RecordNotFound{}
-}
-
-func wrapRecordNotFound(err error) error {
+func errNotFoundOr(err error) error {
 	if err == sql.ErrNoRows {
-		return newRecordNotFound()
+		return ErrNotFound
 	}
 	return err
 }
@@ -35,7 +30,7 @@ type DbClient struct {
 func NewDatabaseId() (DatabaseId, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return NewUnsetDatabaseId(), err
+		return NewUnsetDatabaseId(), errors.Join(ErrIdGenFailed, err)
 	}
 
 	return DatabaseId(id.String()), nil

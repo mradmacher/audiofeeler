@@ -49,21 +49,32 @@ func (repo *EventRepo) Save(event Event) (DatabaseId, error) {
 	}
 	if IsDatabaseIdSet(event.Id) {
 		id = event.Id
+		query = "UPDATE event SET name = $1, date = $2, hour = $3, venue = $4, town = $5, location = $6, description = $7, status = $8 " +
+			"WHERE id = $9;"
+		_, err = repo.Db.Conn.Exec(
+			query,
+			event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, eventStatus, id,
+		)
 	} else {
 		query = "INSERT INTO event (id, account_id, name, date, hour, venue, town, location, description, status) " +
 			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);"
 		if id, err = NewDatabaseId(); err != nil {
 			return id, err
 		}
+		_, err = repo.Db.Conn.Exec(
+			query,
+			id, event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, eventStatus,
+		)
 	}
-	_, err = repo.Db.Conn.Exec(
-		query,
-		id, event.AccountId, event.Name, event.Date, event.Hour, event.Venue, event.Town, event.Location, event.Description, eventStatus,
-	)
 	if err != nil {
 		return NewUnsetDatabaseId(), err
 	}
 	return id, err
+}
+
+func (repo *EventRepo) Delete(id DatabaseId) error {
+	_, err := repo.Db.Conn.Exec("DELETE FROM event where ID = $1", id)
+	return err
 }
 
 func buildEvent(record eventRecord) *Event {
@@ -112,7 +123,7 @@ func (repo *EventRepo) Find(id DatabaseId) (*Event, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, errNotFoundOr(err)
 	}
 
 	return buildEvent(record), nil

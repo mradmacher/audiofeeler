@@ -15,21 +15,21 @@ func NewEventsController(app *App) *EventsController {
 	controller := EventsController{}
 	controller.app = app
 
+	accountRepo := AccountRepo{app.db}
+	eventRepo := EventRepo{app.db}
+
 	controller.indexTemplate = app.ParseTemplate("events", "account_wrapper")
 	controller.newTemplate = app.ParseTemplate("event_form", "account_wrapper")
 
 	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
 		assignResponseDefaults(w)
 
-		accountRepo := AccountRepo{controller.app.db}
-		repo := EventRepo{controller.app.db}
 		accountName := r.PathValue("accountName")
-		//id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		account, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}
-		events, err := repo.FindAll(account.Id)
+		events, err := eventRepo.FindAll(account.Id)
 		if err != nil {
 			panic(err)
 		}
@@ -52,9 +52,7 @@ func NewEventsController(app *App) *EventsController {
 	app.router.HandleFunc("GET /accounts/{accountName}/events/new", func(w http.ResponseWriter, r *http.Request) {
 		assignResponseDefaults(w)
 
-		accountRepo := AccountRepo{controller.app.db}
 		accountName := r.PathValue("accountName")
-		//id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		account, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
@@ -73,6 +71,29 @@ func NewEventsController(app *App) *EventsController {
 		if err != nil {
 			panic(err)
 		}
+	})
+
+	app.router.HandleFunc("POST /accounts/{accountName}/events", func(w http.ResponseWriter, r *http.Request) {
+		assignResponseDefaults(w)
+
+		accountName := r.PathValue("accountName")
+		event := Event{
+			Name:        r.PostFormValue("event[name]"),
+			Date:        r.PostFormValue("event[date]"),
+			Hour:        r.PostFormValue("event[hour]"),
+			Venue:       r.PostFormValue("event[venue]"),
+			Town:        r.PostFormValue("event[town]"),
+			Location:    r.PostFormValue("event[location]"),
+			Description: r.PostFormValue("event[description]"),
+		}
+		account, err := accountRepo.FindByName(accountName)
+		if err != nil {
+			panic(err)
+		}
+		event.AccountId = account.Id
+		eventRepo.Save(event)
+
+		http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusFound)
 	})
 
 	return &controller

@@ -25,12 +25,14 @@ func TestEventRepo(t *testing.T) {
 
 	r := EventRepo{db}
 
-	t.Run("Save", testEventRepo_Save(&r, accountId))
+	t.Run("Save create", testEventRepo_Save_create(&r, accountId))
+	t.Run("Save update", testEventRepo_Save_update(&r, accountId))
+	t.Run("Delete", testEventRepo_Delete(&r, accountId))
 	t.Run("Find not nil values", testEventRepo_Find_not_nils(&r, DatabaseId(accountId)))
 	t.Run("Find nil values", testEventRepo_Find_nils(&r, DatabaseId(accountId)))
 }
 
-func testEventRepo_Save(r *EventRepo, accountId DatabaseId) func(*testing.T) {
+func testEventRepo_Save_create(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name  string
@@ -76,6 +78,85 @@ func testEventRepo_Save(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	}
 }
 
+func testEventRepo_Save_update(r *EventRepo, accountId DatabaseId) func(*testing.T) {
+	return func(t *testing.T) {
+		event := Event{
+			AccountId:   DatabaseId(accountId),
+			Date:        "2024-02-01",
+			Hour:        "21:00",
+			Name:        "Some festival",
+			Venue:       "Some venue",
+			Location:    "Some location",
+			Town:        "Some town",
+			Description: "Some description",
+			Status:      CurrentEvent,
+		}
+		newEvent := Event{
+			AccountId:   DatabaseId(accountId),
+			Date:        "2025-03-02",
+			Hour:        "22:00",
+			Name:        "Some new festival",
+			Venue:       "Some new venue",
+			Location:    "Some new location",
+			Town:        "Some new town",
+			Description: "Some new description",
+			Status:      ArchivedEvent,
+		}
+
+		t.Run("updates existing event", func(t *testing.T) {
+			id, err := r.Save(event)
+			assert.NilError(t, err)
+
+			newEvent.Id = id
+			id, err = r.Save(newEvent)
+			assert.NilError(t, err)
+
+			got, err := r.Find(id)
+			assert.NilError(t, err)
+
+			assert.Equal(t, got.Id, newEvent.Id)
+			assert.Equal(t, got.AccountId, newEvent.AccountId)
+			assert.Equal(t, got.Date, newEvent.Date)
+			assert.Equal(t, got.Name, newEvent.Name)
+			assert.Equal(t, got.Hour, newEvent.Hour)
+			assert.Equal(t, got.Venue, newEvent.Venue)
+			assert.Equal(t, got.Town, newEvent.Town)
+			assert.Equal(t, got.Location, newEvent.Location)
+			assert.Equal(t, got.Description, newEvent.Description)
+			assert.Equal(t, got.Status, newEvent.Status)
+		})
+	}
+}
+
+func testEventRepo_Delete(r *EventRepo, accountId DatabaseId) func(*testing.T) {
+	return func(t *testing.T) {
+		event := Event{
+			AccountId:   DatabaseId(accountId),
+			Date:        "2024-02-01",
+			Hour:        "21:00",
+			Name:        "Some festival",
+			Venue:       "Some venue",
+			Location:    "Some location",
+			Town:        "Some town",
+			Description: "Some description",
+			Status:      CurrentEvent,
+		}
+
+		t.Run("deletes existing event", func(t *testing.T) {
+			id, err := r.Save(event)
+			assert.NilError(t, err)
+			var returned *Event
+			returned, err = r.Find(id)
+			assert.NilError(t, err)
+			assert.Check(t, returned != nil)
+
+			r.Delete(id)
+			returned, err = r.Find(id)
+			assert.ErrorIs(t, err, ErrNotFound)
+			assert.Check(t, returned == nil)
+		})
+	}
+}
 func testEventRepo_Find_not_nils(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 	return func(t *testing.T) {
 		event := Event{
