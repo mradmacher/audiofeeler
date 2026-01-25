@@ -4,7 +4,11 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
+	"path/filepath"
 )
+
+const sqlDir = "../db/"
 
 type DatabaseId string
 type RecordNotFound struct{}
@@ -62,48 +66,12 @@ func (db *DbClient) Close() {
 }
 
 func (db *DbClient) CreateStructure() error {
-	_, err := db.Conn.Exec(
-		`
-		CREATE TABLE event_status (
-			value TEXT NOT NULL PRIMARY KEY
-		);
-
-		INSERT INTO event_status (value)
-		  VALUES ('current'), ('archived');
-
-		CREATE TABLE account (
-		  id TEXT PRIMARY KEY,
-		  name TEXT
-		);
-
-		CREATE TABLE deployment (
-		  id TEXT PRIMARY KEY,
-		  account_id INTEGER NOT NULL,
-		  server TEXT,
-		  username TEXT,
-		  username_iv TEXT,
-		  password TEXT,
-		  password_iv TEXT,
-		  remote_dir TEXT,
-		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
-		);
-
-		CREATE TABLE event (
-		  id TEXT PRIMARY KEY,
-		  account_id INTEGER NOT NULL,
-		  name TEXT,
-		  date TEXT,
-		  hour TEXT,
-		  venue TEXT,
-		  town TEXT,
-		  location TEXT,
-		  description TEXT,
-		  status TEXT NOT NULL,
-		  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-		  FOREIGN KEY(status) REFERENCES event_status(value) ON UPDATE RESTRICT ON DELETE RESTRICT
-		);
-        `,
-	)
+	path := filepath.Join(sqlDir, "schema.sql")
+	schema, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	_, err = db.Conn.Exec(string(schema))
 
 	if err != nil {
 		return err
@@ -112,13 +80,11 @@ func (db *DbClient) CreateStructure() error {
 }
 
 func (db *DbClient) RemoveStructure() error {
-	_, err := db.Conn.Exec(
-		`
-		DROP TABLE IF EXISTS event;
-		DROP TABLE IF EXISTS event_status;
-		DROP TABLE IF EXISTS deployment;
-		DROP TABLE IF EXISTS account;
-		`,
-	)
+	path := filepath.Join(sqlDir, "drop.sql")
+	schema, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	_, err = db.Conn.Exec(string(schema))
 	return err
 }

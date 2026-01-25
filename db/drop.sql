@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS event;
+DROP TABLE IF EXISTS event_status;
+DROP TABLE IF EXISTS deployment;
+DROP TABLE IF EXISTS account;
