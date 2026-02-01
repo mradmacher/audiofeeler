@@ -25,10 +25,11 @@ func NewEventsController(app *App) *EventsController {
 		assignResponseDefaults(w)
 
 		accountName := r.PathValue("accountName")
-		account, err := accountRepo.FindByName(accountName)
+		accountFindResult, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}
+		account := accountFindResult.Record
 		events, err := eventRepo.FindAll(account.Id)
 		if err != nil {
 			panic(err)
@@ -53,23 +54,26 @@ func NewEventsController(app *App) *EventsController {
 		assignResponseDefaults(w)
 
 		accountName := r.PathValue("accountName")
-		account, err := accountRepo.FindByName(accountName)
+		accountFindResult, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}
-		err = controller.newTemplate.ExecuteTemplate(
-			w,
-			selectTemplateName(r),
-			struct {
-				Account Account
-				Event   Event
-			}{
-				account,
-				Event{},
-			},
-		)
-		if err != nil {
-			panic(err)
+		if accountFindResult.IsFound {
+			account := accountFindResult.Record
+			err = controller.newTemplate.ExecuteTemplate(
+				w,
+				selectTemplateName(r),
+				struct {
+					Account Account
+					Event   Event
+				}{
+					account,
+					Event{},
+				},
+			)
+			if err != nil {
+				panic(err)
+			}
 		}
 	})
 
@@ -86,14 +90,17 @@ func NewEventsController(app *App) *EventsController {
 			Location:    r.PostFormValue("event[location]"),
 			Description: r.PostFormValue("event[description]"),
 		}
-		account, err := accountRepo.FindByName(accountName)
+		accountFindResult, err := accountRepo.FindByName(accountName)
 		if err != nil {
 			panic(err)
 		}
-		event.AccountId = account.Id
-		eventRepo.Save(event)
+		if accountFindResult.IsFound {
+			account := accountFindResult.Record
+			event.AccountId = account.Id
+			eventRepo.Save(event)
 
-		http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusFound)
+			http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusFound)
+		}
 	})
 
 	app.router.HandleFunc("DELETE /accounts/{accountName}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {

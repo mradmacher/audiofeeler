@@ -32,20 +32,23 @@ func NewAccountsController(app *App) *AccountsController {
 func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *http.Request) {
 	assignResponseDefaults(w)
 	repo := AccountRepo{controller.app.db}
-	account, err := repo.FindByName(r.PathValue("name"))
+	findResult, err := repo.FindByName(r.PathValue("name"))
 	if err != nil {
 		panic(err)
 	}
-	err = controller.showTemplate.ExecuteTemplate(
-		w,
-		"application",
-		AccountView{
-			Id:   account.Id,
-			Name: account.Name,
-		},
-	)
-	if err != nil {
-		panic(err)
+	if findResult.IsFound {
+		account := findResult.Record
+		err = controller.showTemplate.ExecuteTemplate(
+			w,
+			"application",
+			AccountView{
+				Id:   account.Id,
+				Name: account.Name,
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

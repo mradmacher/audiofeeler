@@ -33,15 +33,22 @@ func (repo *AccountRepo) Save(account Account) (DatabaseId, error) {
 	return id, nil
 }
 
-func buildAccount(record accountRecord) *Account {
-	account := Account{
-		Id:   DatabaseId(record.id),
-		Name: record.name,
+func buildAccount(record accountRecord, isFound bool) *Account {
+	var account Account
+
+	if isFound {
+		account = Account{
+			Id:   DatabaseId(record.id),
+			Name: record.name,
+		}
+	} else {
+		account = Account{}
 	}
+
 	return &account
 }
 
-func (repo *AccountRepo) FindByName(name string) (Account, error) {
+func (repo *AccountRepo) FindByName(name string) (FindResult[Account], error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, name
@@ -57,11 +64,9 @@ func (repo *AccountRepo) FindByName(name string) (Account, error) {
 		&record.name,
 	)
 
-	if err != nil {
-		return Account{}, errNotFoundOr(err)
-	}
+	found, err := FilterNotFoundErr(err)
 
-	return *buildAccount(record), nil
+	return FindResult[Account]{*buildAccount(record, found), found}, err
 }
 
 func (repo *AccountRepo) FindAll() ([]Account, error) {
@@ -84,7 +89,7 @@ func (repo *AccountRepo) FindAll() ([]Account, error) {
 			&record.name,
 		)
 
-		accounts = append(accounts, *buildAccount(record))
+		accounts = append(accounts, *buildAccount(record, true))
 	}
 
 	if rows.Err() != nil {

@@ -104,6 +104,7 @@ func testEventRepo_Save_update(r *EventRepo, accountId DatabaseId) func(*testing
 		}
 
 		t.Run("updates existing event", func(t *testing.T) {
+			var got Event
 			id, err := r.Save(event)
 			assert.NilError(t, err)
 
@@ -111,8 +112,10 @@ func testEventRepo_Save_update(r *EventRepo, accountId DatabaseId) func(*testing
 			id, err = r.Save(newEvent)
 			assert.NilError(t, err)
 
-			got, err := r.Find(id)
+			gotResult, err := r.Find(id)
 			assert.NilError(t, err)
+			assert.Check(t, gotResult.IsFound)
+			got = gotResult.Record
 
 			assert.Equal(t, got.Id, newEvent.Id)
 			assert.Equal(t, got.AccountId, newEvent.AccountId)
@@ -145,15 +148,15 @@ func testEventRepo_Delete(r *EventRepo, accountId DatabaseId) func(*testing.T) {
 		t.Run("deletes existing event", func(t *testing.T) {
 			id, err := r.Save(event)
 			assert.NilError(t, err)
-			var returned *Event
-			returned, err = r.Find(id)
+			var gotResult FindResult[Event]
+			gotResult, err = r.Find(id)
 			assert.NilError(t, err)
-			assert.Check(t, returned != nil)
+			assert.Check(t, gotResult.IsFound)
 
 			r.Delete(id)
-			returned, err = r.Find(id)
-			assert.ErrorIs(t, err, ErrNotFound)
-			assert.Check(t, returned == nil)
+			gotResult, err = r.Find(id)
+			assert.NilError(t, err)
+			assert.Check(t, !gotResult.IsFound)
 		})
 	}
 }
@@ -171,11 +174,14 @@ func testEventRepo_Find_not_nils(r *EventRepo, accountId DatabaseId) func(*testi
 			Status:      ArchivedEvent,
 		}
 
+		var got Event
 		id, err := r.Save(event)
 		assert.NilError(t, err)
 
-		got, err := r.Find(id)
+		gotResult, err := r.Find(id)
 		assert.NilError(t, err)
+		assert.Check(t, gotResult.IsFound)
+		got = gotResult.Record
 
 		assert.Equal(t, got.Id, id)
 		assert.Equal(t, got.AccountId, accountId)
@@ -208,8 +214,11 @@ func testEventRepo_Find_nils(r *EventRepo, accountId DatabaseId) func(*testing.T
 		if err != nil {
 			t.Fatal(err)
 		}
-		got, err := r.Find(id)
+		gotResult, err := r.Find(id)
 		assert.NilError(t, err)
+		assert.Check(t, gotResult.IsFound)
+		got := gotResult.Record
+
 		assert.Equal(t, got.Id, id)
 		assert.Equal(t, got.AccountId, accountId)
 		assert.Equal(t, got.Name, "")

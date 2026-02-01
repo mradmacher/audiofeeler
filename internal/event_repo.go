@@ -77,28 +77,35 @@ func (repo *EventRepo) Delete(id DatabaseId) error {
 	return err
 }
 
-func buildEvent(record eventRecord) *Event {
-	event := Event{
-		Id:          DatabaseId(record.id),
-		AccountId:   DatabaseId(record.accountId),
-		Name:        record.name,
-		Date:        record.date,
-		Hour:        record.hour,
-		Venue:       record.venue,
-		Town:        record.town,
-		Location:    record.location,
-		Description: record.description,
+func buildEvent(record eventRecord, isFound bool) *Event {
+	var event Event
+
+	if isFound {
+		event = Event{
+			Id:          DatabaseId(record.id),
+			AccountId:   DatabaseId(record.accountId),
+			Name:        record.name,
+			Date:        record.date,
+			Hour:        record.hour,
+			Venue:       record.venue,
+			Town:        record.town,
+			Location:    record.location,
+			Description: record.description,
+		}
+		switch record.status {
+		case "archived":
+			event.Status = ArchivedEvent
+		default:
+			event.Status = CurrentEvent
+		}
+	} else {
+		event = Event{}
 	}
-	switch record.status {
-	case "archived":
-		event.Status = ArchivedEvent
-	default:
-		event.Status = CurrentEvent
-	}
+
 	return &event
 }
 
-func (repo *EventRepo) Find(id DatabaseId) (*Event, error) {
+func (repo *EventRepo) Find(id DatabaseId) (FindResult[Event], error) {
 	row := repo.Db.Conn.QueryRow(
 		`
         SELECT id, account_id, name, date, hour, venue, town, location, description, status
@@ -122,11 +129,9 @@ func (repo *EventRepo) Find(id DatabaseId) (*Event, error) {
 		&record.status,
 	)
 
-	if err != nil {
-		return nil, errNotFoundOr(err)
-	}
+	found, err := FilterNotFoundErr(err)
 
-	return buildEvent(record), nil
+	return FindResult[Event]{*buildEvent(record, found), found}, err
 }
 
 func (repo *EventRepo) FindAll(accountId DatabaseId) ([]Event, error) {
@@ -160,7 +165,7 @@ func (repo *EventRepo) FindAll(accountId DatabaseId) ([]Event, error) {
 			&record.status,
 		)
 
-		events = append(events, *buildEvent(record))
+		events = append(events, *buildEvent(record, true))
 	}
 
 	if rows.Err() != nil {
