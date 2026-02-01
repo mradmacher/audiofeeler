@@ -5,6 +5,7 @@
 *.so
 *.dylib
 *.swp
+audiofeeler
 hardcopy.*
 
 .env
