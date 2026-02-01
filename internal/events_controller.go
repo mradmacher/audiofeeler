@@ -96,5 +96,15 @@ func NewEventsController(app *App) *EventsController {
 		http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusFound)
 	})
 
+	app.router.HandleFunc("DELETE /accounts/{accountName}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {
+		assignResponseDefaults(w)
+
+		accountName := r.PathValue("accountName")
+		eventId := DatabaseId(r.PathValue("eventId"))
+		eventRepo.Delete(eventId)
+
+		http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusOK)
+	})
+
 	return &controller
 }

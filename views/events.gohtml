@@ -16,6 +16,7 @@
       </tr>
     </thead>
     <tbody>
+    {{$account := .Account}}
     {{range .Events}}
       <tr>
         <td>{{ .Name }}</td>
@@ -27,8 +28,8 @@
         <td>{{ .Description }}</td>
         <td>{{ .Status }}</td>
         <td>
-          <button hx-get="/accounts/{{ .AccountId }}/events/{{ .Id }}/edit" hx-target="#event-form">Edit</button>
-          <button class="contrast" hx-delete="/accounts/{{ .AccountId }}/events/{{ .Id }}" hx-target="#content-slot">Delete</button>
+          <button hx-get="/accounts/{{.AccountId}}/events/{{.Id}}/edit" hx-target="#event-form">Edit</button>
+          <button class="contrast" hx-delete="/accounts/{{$account.Name}}/events/{{.Id}}" hx-target="closest tr">Delete</button>
         </td>
       </tr>
     {{end}}
