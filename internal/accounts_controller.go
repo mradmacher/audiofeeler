@@ -4,16 +4,22 @@ import (
 	"net/http"
 )
 
+type AccountsPresenter struct {
+	Accounts []Account
+}
+
 type AccountsController struct {
-	app  *App
-	view *AccountView
+	app           *App
+	indexTemplate Template
+	showTemplate  Template
 }
 
 func NewAccountsController(app *App) *AccountsController {
 	controller := AccountsController{}
 	controller.app = app
 
-	controller.view = NewAccountView(app.templateEngine)
+	controller.indexTemplate = app.templateEngine.Parse("accounts")
+	controller.showTemplate = app.templateEngine.Parse("account", "account_wrapper")
 
 	app.router.HandleFunc("GET /{$}", controller.accountsHandler)
 	app.router.HandleFunc("GET /{name}", controller.accountHandler)
@@ -28,7 +34,7 @@ func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *h
 		panic(err)
 	}
 	if findResult.IsFound {
-		controller.view.renderShow(ViewContext{w, r}, findResult.Record)
+		err = controller.showTemplate.Execute(w, r, findResult.Record)
 		if err != nil {
 			panic(err)
 		}
@@ -41,7 +47,7 @@ func (controller *AccountsController) accountsHandler(w http.ResponseWriter, r *
 	if err != nil {
 		panic(err)
 	}
-	err = controller.view.renderIndex(ViewContext{w, r}, accounts)
+	err = controller.indexTemplate.Execute(w, r, AccountsPresenter{accounts})
 	if err != nil {
 		panic(err)
 	}

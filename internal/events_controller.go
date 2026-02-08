@@ -4,9 +4,20 @@ import (
 	"net/http"
 )
 
+type EventPresenter struct {
+	Account Account
+	Event   Event
+}
+
+type EventsPresenter struct {
+	Account Account
+	Events  []Event
+}
+
 type EventsController struct {
-	app  *App
-	view *EventView
+	app           *App
+	indexTemplate Template
+	newTemplate   Template
 }
 
 func NewEventsController(app *App) *EventsController {
@@ -16,7 +27,8 @@ func NewEventsController(app *App) *EventsController {
 	accountRepo := AccountRepo{app.db}
 	eventRepo := EventRepo{app.db}
 
-	controller.view = NewEventView(app.templateEngine)
+	controller.indexTemplate = app.templateEngine.Parse("events", "account_wrapper")
+	controller.newTemplate = app.templateEngine.Parse("event_form", "account_wrapper")
 
 	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
 		accountName := r.PathValue("accountName")
@@ -29,7 +41,7 @@ func NewEventsController(app *App) *EventsController {
 		if err != nil {
 			panic(err)
 		}
-		err = controller.view.renderIndex(ViewContext{w, r}, account, events)
+		err = controller.indexTemplate.Execute(w, r, EventsPresenter{account, events})
 		if err != nil {
 			panic(err)
 		}
@@ -42,7 +54,7 @@ func NewEventsController(app *App) *EventsController {
 			panic(err)
 		}
 		if accountFindResult.IsFound {
-			err = controller.view.renderNew(ViewContext{w, r}, accountFindResult.Record, Event{})
+			err = controller.newTemplate.Execute(w, r, EventPresenter{accountFindResult.Record, Event{}})
 			if err != nil {
 				panic(err)
 			}
