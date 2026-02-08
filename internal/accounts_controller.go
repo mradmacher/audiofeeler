@@ -1,27 +1,19 @@
 package audiofeeler
 
 import (
-	"html/template"
 	"net/http"
 )
 
-type AccountView struct {
-	Id   DatabaseId
-	Name string
-}
-
 type AccountsController struct {
-	app           *App
-	indexTemplate *template.Template
-	showTemplate  *template.Template
+	app  *App
+	view *AccountView
 }
 
 func NewAccountsController(app *App) *AccountsController {
 	controller := AccountsController{}
 	controller.app = app
 
-	controller.indexTemplate = app.ParseTemplate("accounts")
-	controller.showTemplate = app.ParseTemplate("account", "account_wrapper")
+	controller.view = NewAccountView(app.templateEngine)
 
 	app.router.HandleFunc("GET /{$}", controller.accountsHandler)
 	app.router.HandleFunc("GET /{name}", controller.accountHandler)
@@ -30,22 +22,13 @@ func NewAccountsController(app *App) *AccountsController {
 }
 
 func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *http.Request) {
-	assignResponseDefaults(w)
 	repo := AccountRepo{controller.app.db}
 	findResult, err := repo.FindByName(r.PathValue("name"))
 	if err != nil {
 		panic(err)
 	}
 	if findResult.IsFound {
-		account := findResult.Record
-		err = controller.showTemplate.ExecuteTemplate(
-			w,
-			"application",
-			AccountView{
-				Id:   account.Id,
-				Name: account.Name,
-			},
-		)
+		controller.view.renderShow(ViewContext{w, r}, findResult.Record)
 		if err != nil {
 			panic(err)
 		}
@@ -53,29 +36,12 @@ func (controller *AccountsController) accountHandler(w http.ResponseWriter, r *h
 }
 
 func (controller *AccountsController) accountsHandler(w http.ResponseWriter, r *http.Request) {
-	assignResponseDefaults(w)
 	repo := AccountRepo{controller.app.db}
 	accounts, err := repo.FindAll()
 	if err != nil {
 		panic(err)
 	}
-	var views []AccountView
-
-	for _, account := range accounts {
-		views = append(views, AccountView{
-			Id:   account.Id,
-			Name: account.Name,
-		})
-	}
-	err = controller.indexTemplate.ExecuteTemplate(
-		w,
-		"application",
-		struct {
-			Accounts []AccountView
-		}{
-			views,
-		},
-	)
+	err = controller.view.renderIndex(ViewContext{w, r}, accounts)
 	if err != nil {
 		panic(err)
 	}

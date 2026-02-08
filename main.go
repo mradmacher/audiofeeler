@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
       panic("Can't load .env file")
 	}
-	app, err := audiofeeler.NewApp("views", os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	app, err := audiofeeler.NewApp(audiofeeler.NewTemplateEngine("views"), os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
