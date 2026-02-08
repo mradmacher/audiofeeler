@@ -34,7 +34,7 @@ type eventRecord struct {
 }
 
 type EventRepo struct {
-	Db *DbClient
+	Db DbEngine
 }
 
 func (repo *EventRepo) Save(event Event) (DatabaseId, error) {

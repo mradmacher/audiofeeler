@@ -8,14 +8,17 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+	var err error
+	err = godotenv.Load()
 	if err != nil {
       panic("Can't load .env file")
 	}
-	app, err := audiofeeler.NewApp(audiofeeler.NewTemplateEngine("views"), os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	dbEngine, err := audiofeeler.NewDbEngine(os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
+	templateEngine := audiofeeler.NewTemplateEngine("views")
+	app := audiofeeler.NewApp(templateEngine, dbEngine)
 	defer app.Cleanup()
 
 	fmt.Println("Starting the server on :3000...")

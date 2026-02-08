@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func setupDbTest(t *testing.T) (func(*testing.T), *DbClient) {
+func setupDbTest(t *testing.T) (func(*testing.T), DbEngine) {
 	err := godotenv.Load()
 	if err != nil {
 		t.Fatalf("Can't load .env file")
 	}
-	db, err := NewDbClient(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
+	db, err := NewDbEngine(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
 		t.Fatalf("Can't connect to DB: %v", err)
 	}

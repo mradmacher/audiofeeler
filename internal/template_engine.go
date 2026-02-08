@@ -34,12 +34,9 @@ func (vc ViewContext) selectTemplateName() string {
 	return templateName
 }
 
-func (vc ViewContext) assignContentType() {
-	vc.w.Header().Set("Content-Type", "text/html; charset=utf-8")
-}
-
 func (vc ViewContext) execute(t *template.Template, data any) error {
-	vc.assignContentType()
+	vc.w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	err := t.ExecuteTemplate(vc.w, vc.selectTemplateName(), data)
 
 	return err

@@ -11,7 +11,7 @@ type accountRecord struct {
 }
 
 type AccountRepo struct {
-	Db *DbClient
+	Db DbEngine
 }
 
 func (repo *AccountRepo) Save(account Account) (DatabaseId, error) {

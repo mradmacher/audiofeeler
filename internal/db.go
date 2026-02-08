@@ -14,7 +14,7 @@ const sqlDir = "../db/"
 
 type DatabaseId string
 
-type DbClient struct {
+type DbEngine struct {
 	Conn *sql.DB
 }
 
@@ -51,19 +51,19 @@ func IsDatabaseIdSet(id DatabaseId) bool {
 	}
 }
 
-func NewDbClient(dbUrl string) (*DbClient, error) {
+func NewDbEngine(dbUrl string) (DbEngine, error) {
 	conn, err := sql.Open("sqlite3", dbUrl)
 	if err != nil {
-		return nil, err
+		return DbEngine{}, err
 	}
-	return &DbClient{conn}, nil
+	return DbEngine{conn}, nil
 }
 
-func (db *DbClient) Close() {
+func (db *DbEngine) Close() {
 	db.Conn.Close()
 }
 
-func (db *DbClient) CreateStructure() error {
+func (db *DbEngine) CreateStructure() error {
 	path := filepath.Join(sqlDir, "schema.sql")
 	schema, err := os.ReadFile(path)
 	if err != nil {
@@ -77,7 +77,7 @@ func (db *DbClient) CreateStructure() error {
 	return nil
 }
 
-func (db *DbClient) RemoveStructure() error {
+func (db *DbEngine) RemoveStructure() error {
 	path := filepath.Join(sqlDir, "drop.sql")
 	schema, err := os.ReadFile(path)
 	if err != nil {

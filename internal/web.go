@@ -6,25 +6,20 @@ import (
 
 type App struct {
 	router         *http.ServeMux
-	db             *DbClient
+	db             DbEngine
 	templateEngine TemplateEngine
 }
 
-func NewApp(templateEngine TemplateEngine, dbUrl string) (*App, error) {
+func NewApp(templateEngine TemplateEngine, dbEngine DbEngine) *App {
 	app := App{}
 	app.router = http.DefaultServeMux
 	app.templateEngine = templateEngine
-
-	var err error
-	app.db, err = NewDbClient(dbUrl)
-	if err != nil {
-		panic(err)
-	}
+	app.db = dbEngine
 
 	NewAccountsController(&app)
 	NewEventsController(&app)
 
-	return &app, nil
+	return &app
 }
 
 func (app *App) Start() {
