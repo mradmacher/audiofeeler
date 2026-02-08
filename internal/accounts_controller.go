@@ -18,8 +18,8 @@ func NewAccountsController(app *App) *AccountsController {
 	controller := AccountsController{}
 	controller.app = app
 
-	controller.indexTemplate = app.templateEngine.Parse("accounts")
-	controller.showTemplate = app.templateEngine.Parse("account", "account_wrapper")
+	controller.indexTemplate = app.templateEngine.MustParse("accounts")
+	controller.showTemplate = app.templateEngine.MustParse("account", "account_wrapper")
 
 	app.router.HandleFunc("GET /{$}", controller.accountsHandler)
 	app.router.HandleFunc("GET /{name}", controller.accountHandler)

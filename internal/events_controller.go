@@ -27,8 +27,8 @@ func NewEventsController(app *App) *EventsController {
 	accountRepo := AccountRepo{app.db}
 	eventRepo := EventRepo{app.db}
 
-	controller.indexTemplate = app.templateEngine.Parse("events", "account_wrapper")
-	controller.newTemplate = app.templateEngine.Parse("event_form", "account_wrapper")
+	controller.indexTemplate = app.templateEngine.MustParse("events", "account_wrapper")
+	controller.newTemplate = app.templateEngine.MustParse("event_form", "account_wrapper")
 
 	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
 		accountName := r.PathValue("accountName")

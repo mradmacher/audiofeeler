@@ -30,7 +30,7 @@ func NewTemplateEngine(templatesPath string) TemplateEngine {
 	return TemplateEngine{templatesPath}
 }
 
-func (t *TemplateEngine) Parse(names ...string) Template {
+func (t *TemplateEngine) MustParse(names ...string) Template {
 	files := []string{t.templatesPath + "/application.gohtml"}
 	for _, name := range names {
 		files = append(files, t.templatesPath+"/"+name+".gohtml")
