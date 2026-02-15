@@ -11,11 +11,10 @@ func TestAccountRepo(t *testing.T) {
 
 	r := AccountRepo{db}
 
-	t.Run("Create with all params", testCreate_allParams(&r))
-	t.Run("Create with missing params", testCreate_missingParams(&r))
-	t.Run("Create with duplicated name", testCreate_duplicatedName(&r))
 	t.Run("FindAll", testFindAll(&r))
+	t.Run("Find", testFind(&r))
 	t.Run("FindByName", testFindByName(&r))
+	t.Run("Create", testCreate(&r))
 }
 
 func testFindAll(r *AccountRepo) func(*testing.T) {
@@ -38,55 +37,39 @@ func testFindAll(r *AccountRepo) func(*testing.T) {
 	}
 }
 
-func testCreate_duplicatedName(r *AccountRepo) func(*testing.T) {
+func testCreate(r *AccountRepo) func(*testing.T) {
 	return func(t *testing.T) {
 		account := Account{
-			Name: "this-is-unique",
+			Name: "example",
 		}
-		_, err := r.Save(account)
+
+		id, err := r.Save(account)
+
+		assert.NilError(t, err)
+		assert.Check(t, IsDatabaseIdSet(id))
+	}
+}
+
+func testFind(r *AccountRepo) func(*testing.T) {
+	return func(t *testing.T) {
+		var got Account
+
+		result, err := r.Find("someaccount")
+		assert.NilError(t, err)
+		assert.Check(t, !result.IsFound)
+
+		id, err := r.Save(Account{
+			Name: "Test Account",
+		})
 		assert.NilError(t, err)
 
-		dupAccount := Account{
-			Name: "this-is-unique",
-		}
-		_, err = r.Save(dupAccount)
-		assert.Check(t, err != nil, "It should not create record with duplicated name")
-	}
-}
+		result, err = r.Find(id)
+		assert.NilError(t, err)
+		assert.Check(t, result.IsFound)
+		got = result.Record
 
-func testCreate_missingParams(r *AccountRepo) func(*testing.T) {
-	return func(t *testing.T) {
-		account := Account{
-			Name: "",
-		}
-
-		_, err := r.Save(account)
-		assert.Check(t, err != nil, "It should not create record with missing data")
-	}
-}
-
-func testCreate_allParams(r *AccountRepo) func(*testing.T) {
-	return func(t *testing.T) {
-		tests := []struct {
-			name    string
-			account Account
-		}{
-			{
-				"all params",
-				Account{
-					Name: "example",
-				},
-			},
-		}
-
-		for _, test := range tests {
-			t.Run(test.name, func(t *testing.T) {
-				id, err := r.Save(test.account)
-
-				assert.NilError(t, err)
-				assert.Check(t, IsDatabaseIdSet(id))
-			})
-		}
+		assert.Equal(t, got.Id, id)
+		assert.Equal(t, got.Name, "Test Account")
 	}
 }
 

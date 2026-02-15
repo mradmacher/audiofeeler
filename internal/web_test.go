@@ -11,10 +11,11 @@ func TestHome(t *testing.T) {
 	teardown, _ := setupDbTest(t)
 	defer teardown(t)
 
-	app, err := NewApp("../views", os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
+	dbEngine, err := NewDbEngine(os.Getenv("AUDIOFEELER_TEST_DATABASE_URL"))
 	if err != nil {
-		t.Errorf("Error creating the app: %v", err)
+		t.Errorf("Error creating the DbEngine: %v", err)
 	}
+	app := NewApp(NewTemplateEngine("../views"), dbEngine)
 
 	req := httptest.NewRequest("GET", "/", nil)
 	res := httptest.NewRecorder()

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func setupAccount(db *DbClient, t *testing.T) DatabaseId {
+func setupAccount(db DbEngine, t *testing.T) DatabaseId {
 	accountRepo := AccountRepo{db}
 	accountId, err := accountRepo.Save(
 		Account{

@@ -48,6 +48,27 @@ func buildAccount(record accountRecord, isFound bool) *Account {
 	return &account
 }
 
+func (repo *AccountRepo) Find(id DatabaseId) (FindResult[Account], error) {
+	row := repo.Db.Conn.QueryRow(
+		`
+        SELECT id, name
+		FROM account
+		WHERE id = $1;
+		`,
+		id,
+	)
+
+	record := accountRecord{}
+	err := row.Scan(
+		&record.id,
+		&record.name,
+	)
+
+	found, err := FilterNotFoundErr(err)
+
+	return FindResult[Account]{*buildAccount(record, found), found}, err
+}
+
 func (repo *AccountRepo) FindByName(name string) (FindResult[Account], error) {
 	row := repo.Db.Conn.QueryRow(
 		`

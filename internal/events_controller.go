@@ -17,7 +17,7 @@ type EventsPresenter struct {
 type EventsController struct {
 	app           *App
 	indexTemplate Template
-	formTemplate   Template
+	formTemplate  Template
 }
 
 func NewEventsController(app *App) *EventsController {
@@ -70,7 +70,7 @@ func NewEventsController(app *App) *EventsController {
 		if accountFindResult.IsFound {
 			account := accountFindResult.Record
 			eventId := DatabaseId(r.PathValue("eventId"))
-		    eventFindResult, err := eventRepo.Find(eventId)
+			eventFindResult, err := eventRepo.Find(eventId)
 			if err != nil {
 				panic(err)
 			}
@@ -116,7 +116,7 @@ func NewEventsController(app *App) *EventsController {
 		}
 		if accountFindResult.IsFound {
 			eventId := DatabaseId(r.PathValue("eventId"))
-		    eventFindResult, err := eventRepo.Find(eventId)
+			eventFindResult, err := eventRepo.Find(eventId)
 			if err != nil {
 				panic(err)
 			}
