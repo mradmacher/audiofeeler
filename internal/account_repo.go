@@ -1,4 +1,4 @@
-package audiofeeler
+package internal
 
 type Account struct {
 	Id   DatabaseId

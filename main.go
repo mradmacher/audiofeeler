@@ -13,12 +13,12 @@ func main() {
 	if err != nil {
       panic("Can't load .env file")
 	}
-	dbEngine, err := audiofeeler.NewDbEngine(os.Getenv("AUDIOFEELER_DATABASE_URL"))
+	dbEngine, err := internal.NewDbEngine(os.Getenv("AUDIOFEELER_DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
-	templateEngine := audiofeeler.NewTemplateEngine("views")
-	app := audiofeeler.NewApp(templateEngine, dbEngine)
+	templateEngine := internal.NewTemplateEngine("views")
+	app := internal.NewApp(templateEngine, dbEngine)
 	defer app.Cleanup()
 
 	fmt.Println("Starting the server on :3000...")

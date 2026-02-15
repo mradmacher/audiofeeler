@@ -1,4 +1,4 @@
-package audiofeeler
+package internal
 
 import (
 	"html/template"

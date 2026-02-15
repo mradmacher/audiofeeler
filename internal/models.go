@@ -1,4 +1,4 @@
-package audiofeeler
+package internal
 
 type FindResult[T any] struct {
 	Record  T

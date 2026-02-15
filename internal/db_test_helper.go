@@ -1,4 +1,4 @@
-package audiofeeler
+package internal
 
 import (
 	"github.com/joho/godotenv"
