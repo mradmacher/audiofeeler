@@ -1,33 +1,39 @@
-DROP TABLE IF EXISTS events;
-DROP TABLE IF EXISTS deployments;
-DROP TABLE IF EXISTS accounts;
-
-CREATE TABLE accounts (
-  id INTEGER PRIMARY KEY,
-  name TEXT,
-  source_dir TEXT
+CREATE TABLE event_status (
+  value TEXT NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE deployments (
-  id INTEGER PRIMARY KEY,
-  account_id INTEGER,
+INSERT INTO event_status (value)
+  VALUES ('current'), ('archived');
+
+CREATE TABLE account (
+  id TEXT PRIMARY KEY,
+  name TEXT
+);
+
+CREATE TABLE target (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
   server TEXT,
   username TEXT,
-  username_iv TEXT,
+  username_nonce TEXT,
   password TEXT,
-  password_iv TEXT,
-  remote_dir TEXT,
-  FOREIGN KEY(account_id) REFERENCES accounts(id)
+  password_nonce TEXT,
+  dir TEXT,
+  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-CREATE TABLE events (
-  id INTEGER PRIMARY KEY,
-  account_id INTEGER,
+CREATE TABLE event (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  name TEXT,
   date TEXT,
   hour TEXT,
   venue TEXT,
-  place TEXT,
-  city TEXT,
-  address TEXT,
-  FOREIGN KEY(account_id) REFERENCES accounts(id)
+  town TEXT,
+  location TEXT,
+  description TEXT,
+  status TEXT NOT NULL,
+  FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  FOREIGN KEY(status) REFERENCES event_status(value) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
