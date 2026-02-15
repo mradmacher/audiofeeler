@@ -10,21 +10,21 @@ CREATE TABLE account (
   name TEXT
 );
 
-CREATE TABLE deployment (
+CREATE TABLE target (
   id TEXT PRIMARY KEY,
-  account_id INTEGER NOT NULL,
+  account_id TEXT NOT NULL,
   server TEXT,
   username TEXT,
-  username_iv TEXT,
+  username_nonce TEXT,
   password TEXT,
-  password_iv TEXT,
-  remote_dir TEXT,
+  password_nonce TEXT,
+  dir TEXT,
   FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
 CREATE TABLE event (
   id TEXT PRIMARY KEY,
-  account_id INTEGER NOT NULL,
+  account_id TEXT NOT NULL,
   name TEXT,
   date TEXT,
   hour TEXT,
