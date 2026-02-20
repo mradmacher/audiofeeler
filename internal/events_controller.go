@@ -30,9 +30,8 @@ func NewEventsController(app *App) *EventsController {
 	controller.indexTemplate = app.templateEngine.MustParse("events", "account_wrapper")
 	controller.formTemplate = app.templateEngine.MustParse("event_form", "account_wrapper")
 
-	app.router.HandleFunc("GET /accounts/{accountName}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
-		accountFindResult, err := accountRepo.FindByName(accountName)
+	app.router.HandleFunc("GET /accounts/{accountId}/events/{$}", func(w http.ResponseWriter, r *http.Request) {
+		accountFindResult, err := accountRepo.Find(DatabaseId(r.PathValue("accountId")))
 		if err != nil {
 			panic(err)
 		}
@@ -47,9 +46,8 @@ func NewEventsController(app *App) *EventsController {
 		}
 	})
 
-	app.router.HandleFunc("GET /accounts/{accountName}/events/new", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
-		accountFindResult, err := accountRepo.FindByName(accountName)
+	app.router.HandleFunc("GET /accounts/{accountId}/events/new", func(w http.ResponseWriter, r *http.Request) {
+		accountFindResult, err := accountRepo.Find(DatabaseId(r.PathValue("accountId")))
 		if err != nil {
 			panic(err)
 		}
@@ -61,9 +59,8 @@ func NewEventsController(app *App) *EventsController {
 		}
 	})
 
-	app.router.HandleFunc("GET /accounts/{accountName}/events/{eventId}/edit", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
-		accountFindResult, err := accountRepo.FindByName(accountName)
+	app.router.HandleFunc("GET /accounts/{accountId}/events/{eventId}/edit", func(w http.ResponseWriter, r *http.Request) {
+		accountFindResult, err := accountRepo.Find(DatabaseId(r.PathValue("accountId")))
 		if err != nil {
 			panic(err)
 		}
@@ -84,8 +81,8 @@ func NewEventsController(app *App) *EventsController {
 		}
 	})
 
-	app.router.HandleFunc("POST /accounts/{accountName}/events", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
+	app.router.HandleFunc("POST /accounts/{accountId}/events", func(w http.ResponseWriter, r *http.Request) {
+		accountId := r.PathValue("accountId")
 		event := Event{
 			Name:        r.PostFormValue("event[name]"),
 			Date:        r.PostFormValue("event[date]"),
@@ -95,7 +92,7 @@ func NewEventsController(app *App) *EventsController {
 			Location:    r.PostFormValue("event[location]"),
 			Description: r.PostFormValue("event[description]"),
 		}
-		accountFindResult, err := accountRepo.FindByName(accountName)
+		accountFindResult, err := accountRepo.Find(DatabaseId(accountId))
 		if err != nil {
 			panic(err)
 		}
@@ -104,13 +101,13 @@ func NewEventsController(app *App) *EventsController {
 			event.AccountId = account.Id
 			eventRepo.Save(event)
 
-			http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusSeeOther)
+			http.Redirect(w, r, "/accounts/"+accountId+"/events", http.StatusSeeOther)
 		}
 	})
 
-	app.router.HandleFunc("PUT /accounts/{accountName}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
-		accountFindResult, err := accountRepo.FindByName(accountName)
+	app.router.HandleFunc("PUT /accounts/{accountId}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {
+		accountId := r.PathValue("accountId")
+		accountFindResult, err := accountRepo.Find(DatabaseId(accountId))
 		if err != nil {
 			panic(err)
 		}
@@ -135,17 +132,18 @@ func NewEventsController(app *App) *EventsController {
 					panic(err)
 				}
 
-				http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusSeeOther)
+				http.Redirect(w, r, "/accounts/"+accountId+"/events", http.StatusSeeOther)
 			}
 		}
 	})
 
-	app.router.HandleFunc("DELETE /accounts/{accountName}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {
-		accountName := r.PathValue("accountName")
+	app.router.HandleFunc("DELETE /accounts/{accountId}/events/{eventId}", func(w http.ResponseWriter, r *http.Request) {
+		//accountFindResult, err := accountRepo.Find(DatabaseId(r.PathValue("accountId")))
+		accountId := r.PathValue("accountId")
 		eventId := DatabaseId(r.PathValue("eventId"))
 		eventRepo.Delete(eventId)
 
-		http.Redirect(w, r, "/accounts/"+accountName+"/events", http.StatusOK)
+		http.Redirect(w, r, "/accounts/"+accountId+"/events", http.StatusOK)
 	})
 
 	return &controller

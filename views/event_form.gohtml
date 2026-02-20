@@ -37,11 +37,11 @@
       </label>
     </fieldset>
     {{ if .Event.Id }}
-      <button hx-put="/accounts/{{.Account.Name}}/events/{{.Event.Id}}" hx-target="#content-slot">Save event</button>
+      <button hx-put="/accounts/{{.Account.Id}}/events/{{.Event.Id}}" hx-target="#content-slot">Save event</button>
     {{ else }}
-      <button hx-post="/accounts/{{.Account.Name}}/events" hx-target="#content-slot">Create event</button>
+      <button hx-post="/accounts/{{.Account.Id}}/events" hx-target="#content-slot">Create event</button>
     {{ end }}
-    <button hx-get="/accounts/{{.Account.Name}}/events" hx-target="#content-slot">Cancel</button>
+    <button hx-get="/accounts/{{.Account.Id}}/events" hx-target="#content-slot">Cancel</button>
   </form>
 </article>
 {{end}}

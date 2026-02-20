@@ -1,19 +1,19 @@
 {{define "wrapper"}}
 <section>
   <hgroup>
-    <h1><a href="/{{ .Name }}">{{ .Name }}</a></h1>
+    <h1><a href="/accounts/{{.Id}}">{{.Name}}</a></h1>
   </hgroup>
   <nav>
     <ul>
       <li>
-        <a hx-get="/accounts/{{.Name}}/events"
+        <a hx-get="/accounts/{{.Id}}/events"
            hx-push-url="true"
            hx-target="#content-slot">
            Events
         </a>
       </li>
       <li>
-        <a hx-get="/accounts/{{ .Id }}/deployments"
+        <a hx-get="/accounts/{{.Id}}/deployments"
            hx-push-url="true"
            hx-target="#content-slot">
            Deployments

@@ -21,7 +21,7 @@ func TestHome(t *testing.T) {
 	res := httptest.NewRecorder()
 	app.router.ServeHTTP(res, req)
 
-	if res.Code != http.StatusOK {
-		t.Errorf("Expected response code %d; got %d\n", http.StatusOK, res.Code)
+	if res.Code != http.StatusSeeOther {
+		t.Errorf("Expected response code %d; got %d\n", http.StatusSeeOther, res.Code)
 	}
 }
